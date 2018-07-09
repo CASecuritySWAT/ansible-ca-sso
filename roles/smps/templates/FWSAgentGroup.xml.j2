@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by CA SiteMinder Version 12.52.0105.2112
+     by os:root
+     at 10:59:16 on 2016-06-22 -->
+<!-- Uses schema "CA_SiteMinder_WAM-XPS2.xsd". This file
+     can be found on policy servers under siteminder/db -->
+<XPS xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"
+    xs:noNamespaceSchemaLocation="CA_SiteMinder_WAM-XPS2.xsd">
+    <XPSVersion>1</XPSVersion>
+    <PolicyData IsDumpExport="false">
+        <References>
+            <ReferenceObject ReferenceId="Ref00001" ObjectClass="CA.SM::AgentType">
+            <Xid>CA.SM::AgentType@10-8d78bb96-ae15-11d1-9cdd-006008aac24b</Xid>
+            <Attribute Name="CA.SM::AgentType.Name" Type="Identity">
+                <StringValue>Web Agent</StringValue>
+            </Attribute>
+            <Attribute Name="CA.SM::AgentType.Desc" Type="Comment">
+                <StringValue>SiteMinder Web Agent</StringValue>
+            </Attribute>
+            </ReferenceObject>
+        </References>
+        <Object Class="CA.SM::Agent" Xid="CA.SM::Agent@01-000a7d2e-4b22-1733-84ac-0003ac12d07d" CreatedDateTime="2016-06-20T20:19:46" ModifiedDateTime="2016-06-20T20:19:48" UpdatedBy="XPSDictionary::Import" UpdateMethod="Internal" ExportType="Add">
+            <Property Name="CA.SM::Agent.AgentTypeLink">
+                <LinkValue>
+                    <XREF>Ref00001</XREF>
+                </LinkValue>
+            </Property>
+            <Property Name="CA.SM::Agent.RealmHintAttrId">
+                <NumberValue>0</NumberValue>
+            </Property>
+            <Property Name="CA.SM::Agent.Name">
+                <StringValue>sps</StringValue>
+            </Property>
+        </Object><!-- Xid="CA.SM::Agent@01-000a7d2e-4b22-1733-84ac-0003ac12d07d" -->
+        <Object Class="CA.SM::AgentGroup" Xid="CA.SM::AgentGroup@02-3a7b7c62-be09-4a37-b45f-b0220c9e088e" CreatedDateTime="2016-06-20T19:57:38" ModifiedDateTime="2016-06-21T20:54:46" UpdatedBy="siteminder" UpdateMethod="GUI" ExportType="Replace">
+            <Property Name="CA.SM::AgentGroup.AgentTypeLink">
+                <LinkValue>
+                    <XREF>Ref00001</XREF>
+                </LinkValue>
+            </Property>
+            <Property Name="CA.SM::AgentGroup.AgentsLink">
+                <LinkValue>
+                    <XID>CA.SM::Agent@01-000a7d2e-4b22-1733-84ac-0003ac12d07d</XID>
+                </LinkValue>
+            </Property>
+            <Property Name="CA.SM::AgentGroup.Name">
+                <StringValue>FederationWebServicesAgentGroup</StringValue>
+            </Property>
+            <Property Name="CA.SM::AgentGroup.Desc">
+                <StringValue>agent group to secure the federation webservices component.</StringValue>
+            </Property>
+        </Object><!-- Xid="CA.SM::AgentGroup@02-3a7b7c62-be09-4a37-b45f-b0220c9e088e" -->
+    </PolicyData>
+</XPS>
+<!-- 10:59:16 2016-06-22 -->

@@ -1,0 +1,459 @@
+---
+- name: Enable RHEL optional and extras rpms repository
+  shell: subscription-manager repos --enable {{ item }}
+  with_items:
+    - "rhel-{{ ansible_distribution_major_version }}-server-optional-rpms"
+    - "rhel-{{ ansible_distribution_major_version }}-server-extras-rpms"
+  tags: pkg
+  when: (ansible_distribution == "RedHat")
+
+- name: Install/Update the pre-requisite multilib 64-bit packages for SSO 12.5x
+  yum: name="{{ item }}" state=latest
+  with_items: 
+    - "{{ smps_pkgs64 }}"
+  tags: pkg
+  when: sso_version is version('12.6', '<')
+
+- name: Install the pre-requisite 32-bit packages for SSO 12.5x
+  yum: name="{{ item }}" state=latest
+  with_items: 
+    - "{{ smps_pkgs32 }}"
+  tags: pkg
+  when: sso_version is version('12.6', '<')
+
+- name: Install the pre-requisite packages for SSO 12.6
+  yum: name="{{ item }}" state=latest
+  with_items: "{{ smps126_pkgs64 }}"
+  tags: pkg
+  when: sso_version is version('12.6', '>=')
+
+- name: Disable selinux
+  selinux: state=disabled
+  when: not (ansible_virtualization_type == "docker")
+  ignore_errors: yes
+
+- name: Increase open file limit
+  pam_limits: domain=smuser limit_type=- limit_item=nofile value=4096
+  tags: ulimit
+
+- name: Unarchive JDK using download link
+  unarchive: src={{ download_base_url }}/{{ jdk_tgz }} dest=/opt copy=no
+  tags: jdk
+  when: download_base_url is defined
+
+- name: Unarchive JDK
+  unarchive: src=files/{{ jdk_tgz }} dest=/opt
+  tags: jdk
+  when: download_base_url is undefined
+
+- name: Create /opt/jdk link
+  file: src={{ jdk_path }} dest=/opt/jdk state=link
+  tags: jdk
+
+- name: Copy Unlimited JCE for JDK7
+  copy: src=files/UnlimitedJCEPolicy/{{ item }} dest=/opt/jdk/jre/lib/security
+  with_items:
+    - local_policy.jar
+    - US_export_policy.jar
+  tags: jdk
+  when: sso_version is version('12.6', '<')
+
+- name: Copy Unlimited JCE for JDK8 Update < 151
+  copy: src=files/UnlimitedJCEPolicyJDK8/{{ item }} dest=/opt/jdk/jre/lib/security
+  with_items:
+    - local_policy.jar
+    - US_export_policy.jar
+  tags: jdk
+  when: (sso_version is version('12.6', '>=')) and (jdk_tgz.split("-")[1].split("u")[1] < 151)
+
+- name: Copy /etc/sysconfig/rngd
+  copy: src=files/rngd dest=/etc/sysconfig/rngd
+  tags: rngd
+  when: (ansible_distribution_major_version == "6" and ansible_virtualization_type != "docker")
+
+- name: Copy /etc/systemd/system/rngd.service
+  copy: src=files/rngd.service dest=/etc/systemd/system/rngd.service
+  tags: rngd
+  when: (ansible_distribution_major_version == "7" and ansible_virtualization_type != "docker")
+
+- name: Enable rngd on RHEL 6
+  service: name=rngd state=started enabled=yes
+  tags: rngd
+  when: (ansible_distribution_major_version == "6" and ansible_virtualization_type != "docker")
+
+- name: Enable rngd on RHEL 7
+  systemd: name=rngd daemon_reload=yes state=started enabled=yes
+  tags: rngd
+  when: (ansible_distribution_major_version == "7" and ansible_virtualization_type != "docker")
+
+- name: Disable local firewall on RHEL 6
+  service: name=iptables state=stopped enabled=no
+  tags: iptables
+  when: (ansible_distribution_major_version == "6" and ansible_virtualization_type != "docker")
+  ignore_errors: yes
+
+- name: Disable local firewall on RHEL 7
+  service: name=firewalld state=stopped enabled=no
+  tags: iptables
+  when: (ansible_distribution_major_version == "7" and ansible_virtualization_type != "docker")
+  ignore_errors: yes
+
+- name: Create smuser
+  user: name=smuser shell=/bin/ksh
+  tags: smuser
+
+- name: Create parent install directory
+  file: path={{ smps_install_dir | dirname }} owner=smuser group=smuser state=directory
+  tags: smps
+
+- name: Create install directory
+  file: path={{ smps_install_dir }} owner=smuser group=smuser state=directory
+  tags: smps
+
+- name: Download the PS installer
+  get_url: url={{ download_base_url }}/{{ ps_installer_zip }} dest={{ temp_dir }} mode=0755
+  tags: smps
+  when: download_base_url is defined
+
+- name: Copy across the PS installer
+  copy: src=files/{{ ps_installer_zip }} dest={{ temp_dir }} mode=0755
+  tags: smps
+  when: download_base_url is undefined
+
+- name: unzip the installer
+  shell: echo "A" |  unzip {{ temp_dir }}/{{ ps_installer_zip }} chdir={{ temp_dir }} creates={{ temp_dir }}/{{ ps_installer }}
+  tags: smps
+
+- name: remove the PS installer zip for space
+  file: path={{ temp_dir }}/{{ ps_installer_zip }} state=absent
+  tags: smps
+
+- name: Write the PS properties file for installation
+  template: src=ca-ps-installer.properties.j2 dest={{ temp_dir }}/ca-ps-installer.properties mode=0755
+  tags: smps
+
+- name: Change owner of installer
+  file: path={{ temp_dir }}/{{ ps_installer }} owner=smuser group=smuser mode=0755
+  tags: smps
+
+- name: Execute the Policy Server silent install. This may appear to fail in Ansible even though the install is successful.
+  shell: ./{{ ps_installer }} -i silent -f {{ temp_dir }}/ca-ps-installer.properties 1>{{ temp_dir }}/ansible_psinstall.log 2>&1 executable=/bin/bash chdir={{ temp_dir }} creates={{ smps_install_dir }}/bin/EncryptionKey.txt
+  become: yes
+  become_user: smuser
+  tags: smps
+  ignore_errors: yes
+
+- name: Delete installer to save space
+  file: path={{ temp_dir }}/{{ ps_installer }} state=absent
+  tags: smps
+
+- name: Change owner of smreg
+  file: path={{ temp_dir }}/smreg owner=smuser group=smuser mode=0755
+  when: (db_type == "LDAP_CADIR" and ansible_hostname == hostvars[groups['smps'][0]].ansible_hostname)
+  tags: smps
+
+- name: Configure LDAP policy store
+  shell: . {{ smps_install_dir }}/ca_ps_env.ksh; smldapsetup reg -h{{ db_server }} -p{{ db_port }} -d{{ db_user }} -w{{ vault_pstore_admin_password }} -r"{{ db_name }}"
+  become: yes
+  become_user: smuser
+  when: (db_type == "LDAP_CADIR")
+  tags: smps
+
+- name: Setting siteminder super user password
+  shell: . {{ smps_install_dir }}/ca_ps_env.ksh; {{ temp_dir }}/smreg -su {{ siteminder_password }}
+  become: yes
+  become_user: smuser
+  when: (db_type == "LDAP_CADIR" and ansible_hostname == hostvars[groups['smps'][0]].ansible_hostname and init_ps_store)
+  tags: smps
+
+- name: Import policy store data definition
+  shell: . {{ smps_install_dir }}/ca_ps_env.ksh; XPSDDInstall SmMaster.xdd chdir={{ smps_install_dir }}/xps/dd
+  become: yes
+  become_user: smuser
+  when: (db_type == "LDAP_CADIR" and ansible_hostname == hostvars[groups['smps'][0]].ansible_hostname)
+  tags: smps
+
+- name: Import default objects
+  shell: . {{ smps_install_dir }}/ca_ps_env.ksh; XPSImport {{ item }} -npass chdir={{ smps_install_dir }}/db
+  with_items:
+    - smpolicy.xml
+    - ampolicy.xml
+    - fedpolicy-12.5.xml
+  become: yes
+  become_user: smuser
+  when: (db_type == "LDAP_CADIR" and ansible_hostname == hostvars[groups['smps'][0]].ansible_hostname)
+  tags: smps
+
+- name: Copy smps init script
+  template: src=smps.j2 dest=/etc/init.d/smps mode=0755
+  tags: smps
+
+- name: Configure smps service
+  service: name=smps state=started enabled=yes
+  tags: smps
+
+- name: Start policy server
+  service: name=smps state=started pattern=smpolicysrv
+  when: (sso_version is version('12.6', '>=')) or (db_type == "LDAP_CADIR")
+  tags: smps
+
+- name: Pause for 5 seconds before checking smpolicysrv
+  pause: seconds=5
+  tags: smps
+
+- name: Check if the smpolicysrv process is running
+  shell: ps -ef | grep smpolicysrv | grep -v grep | awk '{ print $8 }'
+  register: result
+  until: result.stdout.find("smpolicysrv") != -1
+  retries: 5
+  delay: 5
+  tags: smps
+
+- name: Delete silent install property file
+  file: path={{ temp_dir }}/ca-ps-installer.properties state=absent
+  tags: smps
+
+- name: Enable IM extension
+  lineinfile: dest={{ smps_install_dir }}/registry/sm.registry line="ImsInstalled=                             8.0;  REG_SZ" insertafter=".*CurrentVersion=.*" state=present
+  tags: sso_im_extension
+  when: (im_extension|default(false))
+
+- name: Import IM schema
+  shell: . {{ smps_install_dir }}/ca_ps_env.ksh; XPSDDInstall {{ smps_install_dir }}/xps/dd/IdmSmObjects.xdd chdir={{ smps_install_dir }}/bin
+  tags: sso_im_extension
+  when: (im_extension|default(false) and (ansible_hostname == hostvars[groups['smps'][0]].ansible_hostname))
+
+- name: Copy imagent import file
+  template: src=imagent.xml.j2 dest={{ temp_dir }}/imagent.xml mode=0755
+  tags: sso_im_extension
+  when: (im_extension|default(false) and (ansible_hostname == hostvars[groups['smps'][0]].ansible_hostname) and init_ps_store)
+
+- name: Import imagent object
+  shell: . {{ smps_install_dir }}/ca_ps_env.ksh; XPSImport {{ temp_dir }}/imagent.xml -npass
+  tags: sso_im_extension
+  when: (im_extension|default(false) and (ansible_hostname == hostvars[groups['smps'][0]].ansible_hostname) and init_ps_store)
+
+- name: Copy XPSConfig script to configure LDAP policy store failover
+  template: src=XPSConfig_LDAPPolicy.log.j2 dest={{ temp_dir }}/XPSConfig_LDAPPolicy.log mode=0755
+  when: (db_type == "LDAP_CADIR") and (groups['pstore']|length > 1)
+  tags: smps
+
+- name: Run XPSConfig to configure LDAP policy store failover
+  shell: . {{ smps_install_dir }}/ca_ps_env.ksh; XPSConfig < {{ temp_dir }}//XPSConfig_LDAPPolicy.log
+  become: yes
+  become_user: smuser
+  when: (db_type == "LDAP_CADIR") and (groups['pstore']|length > 1)
+  tags: smps
+
+- name: Copy XPSConfig script to configure LDAP session store
+  template: src=XPSConfig_LDAPSession.log.j2 dest={{ temp_dir }}/XPSConfig_LDAPSession.log mode=0755
+  when: (db_type == "LDAP_CADIR")
+  tags: smps
+
+- name: Run XPSConfig to configure LDAP session store
+  shell: . {{ smps_install_dir }}/ca_ps_env.ksh; XPSConfig < {{ temp_dir }}//XPSConfig_LDAPSession.log
+  become: yes
+  become_user: smuser
+  when: (db_type == "LDAP_CADIR")
+  tags: smps
+
+- name: Copy copyAdminPW.sed script to set LDAP session store password in sm.registry
+  template: src=copyAdminPW.sed.j2 dest={{ temp_dir }}/copyAdminPW.sed mode=0755
+  when: (db_type == "LDAP_CADIR")
+  tags: smps
+
+- name: Run copyAdminPW.sed script to set LDAP session store password in sm.registry
+  shell: sed -i -f {{ temp_dir }}/copyAdminPW.sed {{ smps_install_dir }}/registry/sm.registry warn=no
+  become: yes
+  become_user: smuser
+  when: (db_type == "LDAP_CADIR")
+  tags: smps
+
+- name: Stop policy server
+  service: name=smps state=stopped pattern=smpolicysrv
+  tags: sso_im_extension
+  ignore_errors: yes
+  when: (im_extension|default(false)) or (db_type == "LDAP_CADIR")
+
+- name: Check if the smpolicysrv process is stopped
+  shell: ps -ef | grep smpolicysrv | grep -v grep | awk '{ print $8 }'
+  register: result
+  until: result.stdout == ""
+  retries: 12
+  delay: 5
+  tags: sso_im_extension
+  when: (im_extension|default(false)) or (db_type == "LDAP_CADIR")
+
+- name: Start policy server
+  service: name=smps state=started pattern=smpolicysrv
+  tags: sso_im_extension
+  when: (im_extension|default(false)) or (db_type == "LDAP_CADIR")
+
+- name: Pause for 5 seconds before checking smpolicysrv
+  pause: seconds=5
+  tags: sso_im_extension
+  when: (im_extension|default(false)) or (db_type == "LDAP_CADIR")
+
+- name: Check if the smpolicysrv process is running
+  shell: ps -ef | grep smpolicysrv | grep -v grep | awk '{ print $8 }'
+  register: result
+  until: result.stdout.find("smpolicysrv") != -1
+  retries: 6
+  delay: 5
+  tags: sso_im_extension
+  when: (im_extension|default(false)) or (db_type == "LDAP_CADIR")
+
+- name: Download the Admin UI installers
+  get_url: url={{ download_base_url }}/{{ item }} dest={{ temp_dir }} mode=0755
+  with_items:
+    - "{{ adminui_prereq_installer_zip }}"
+    - "{{ admin_installer_zip }}"
+  tags: adminui
+  when: download_base_url is defined
+
+- name: Copy across the Admin UI installers
+  copy: src=files/{{ item }} dest={{ temp_dir }} mode=0755
+  with_items:
+    - "{{ adminui_prereq_installer_zip }}"
+    - "{{ admin_installer_zip }}"
+  tags: adminui
+  when: download_base_url is undefined
+
+- name: unzip the Admin UI Pre-req installer
+  shell: echo "A" |  unzip {{ temp_dir }}/{{ adminui_prereq_installer_zip }} chdir={{ temp_dir }} creates={{ temp_dir }}/{{ adminui_prereq_installer }}
+  tags: adminui
+
+- name: unzip the Admin UI installer
+  shell: echo "A" |  unzip {{ temp_dir }}/{{ admin_installer_zip }} chdir={{ temp_dir }} creates={{ temp_dir }}/{{ adminui_installer }}
+  tags: adminui
+
+- name: remove the Admin UI installer zip files for space
+  file: path={{ temp_dir }}/{{ item }} state=absent
+  with_items:
+    - "{{ adminui_prereq_installer_zip }}"
+    - "{{ admin_installer_zip }}"
+  tags: adminui
+
+- name: Write the Admin UI Pre-req properties file for installation
+  template: src=prerequisite-installer.properties.j2 dest={{ temp_dir }}/prerequisite-installer.properties mode=0755
+  tags: adminui
+
+- name: Change owner of pre-req installer
+  file: path={{ temp_dir }}/{{ adminui_prereq_installer }} owner=smuser group=smuser mode=0755
+  tags: adminui
+
+- name: Execute the Admin UI Pre-req silent install
+  shell: ./{{ adminui_prereq_installer }} -i silent -f {{ temp_dir }}/prerequisite-installer.properties executable=/bin/bash chdir={{ temp_dir }} creates={{ smps_install_dir }}/adminui
+  become: yes
+  become_user: smuser
+  tags: adminui
+
+- name: Delete pre-req installer to save space
+  file: path={{ temp_dir }}/{{ adminui_prereq_installer }} state=absent
+  tags: adminui
+
+- name: Write the Admin UI properties file for installation
+  template: src=smwamui-installer.properties.j2 dest={{ temp_dir }}/smwamui-installer.properties mode=0755
+  tags: adminui
+
+- name: Change owner of Admin UI installer
+  file: path={{ temp_dir }}/{{ adminui_installer }} owner=smuser group=smuser mode=0755
+  tags: adminui
+
+- name: Execute the Admin UI silent install
+  shell: ./{{ adminui_installer }} -i silent -f {{ temp_dir }}/smwamui-installer.properties 1>{{ temp_dir }}/ansible_adminuiinstall.log 2>&1 executable=/bin/bash chdir={{ temp_dir }} creates={{ smps_install_dir }}/adminui/SiteMinder
+  become: yes
+  become_user: smuser
+  tags: adminui
+
+- name: Delete adminui installer to save space
+  file: path={{ temp_dir }}/{{ adminui_installer }} state=absent
+  tags: adminui
+
+- name: Delete Admin UI silent install property files
+  file: path={{ temp_dir }}//{{ item }} state=absent
+  with_items:
+    - prerequisite-installer.properties
+    - smwamui-installer.properties
+  tags: adminui
+
+- name: Copy adminui init script
+  template: src=smadminui.j2 dest=/etc/init.d/smadminui mode=0755
+  tags: adminui
+
+- name: Configure adminui service
+  service: name=smadminui state=started enabled=yes
+  tags: adminui
+
+#- name: Start JBoss Admin UI
+#  service: name=smadminui state=started pattern=adminui
+#  tags: adminui
+#  when: (sso_version is version('12.6', '<')) and (ansible_distribution_major_version != "7")
+#
+#- name: Start WildFly Admin UI
+#  shell: . {{ smps_install_dir }}/ca_ps_env.ksh; nohup ./standalone.sh & executable=/bin/bash chdir={{ smps_install_dir }}/adminui/bin
+#  become: yes
+#  become_user: smuser
+#  tags: adminui
+#  when: (sso_version is version('12.6', '>=')) and (ansible_distribution_major_version != "7")
+
+- name: Run XPSRegClient
+  shell: . {{ smps_install_dir }}/ca_ps_env.ksh; XPSRegClient {{ admin_name }}:{{ siteminder_password }} -adminui-setup
+  tags: adminui
+
+- name: Copy default sample object export files
+  template: src={{ item }}.j2 dest={{ temp_dir }}/{{ item }} mode=0755
+  with_items:
+    - DefaultHostSettings.xml
+    - Agent.xml
+    - ApacheAgent.xml
+    - ACO.xml
+    - ApacheACO.xml
+    - SampleUserDir.xml
+    - SampleUserDB.xml
+    - FBA_AuthScheme.xml
+    - FWSAgentGroup.xml
+    - SampleCertificate.xml
+    - SampleDomain.xml
+    - SampleSAMLIDP.xml
+  tags: def_objs
+  when: init_ps_store and sample_objs and (ansible_hostname == hostvars[groups['smps'][0]].ansible_hostname)
+
+- name: Import default sample object files
+  shell: . {{ smps_install_dir }}/ca_ps_env.ksh; XPSImport {{ temp_dir }}/{{ item }} -npass
+  with_items:
+    - DefaultHostSettings.xml
+    - Agent.xml
+    - ApacheAgent.xml
+    - ACO.xml
+    - ApacheACO.xml
+    - SampleUserDir.xml
+    - SampleUserDB.xml
+    - FBA_AuthScheme.xml
+    - FWSAgentGroup.xml
+    - SampleCertificate.xml
+    - SampleDomain.xml
+    - SampleSAMLIDP.xml
+  tags: def_objs
+  when: init_ps_store and sample_objs and (ansible_hostname == hostvars[groups['smps'][0]].ansible_hostname)
+  ignore_errors: yes
+
+- name: Clean up sample object export files
+  file: path={{ temp_dir }}//{{ item }} state=absent
+  with_items:
+    - DefaultHostSettings.xml
+    - Agent.xml
+    - ApacheAgent.xml
+    - ACO.xml
+    - ApacheACO.xml
+    - SampleUserDir.xml
+    - SampleUserDB.xml
+    - FBA_AuthScheme.xml
+    - FWSAgentGroup.xml
+    - SampleCertificate.xml
+    - SampleDomain.xml
+    - SampleSAMLIDP.xml
+    - imagent.xml
+  tags: def_objs
+  when: init_ps_store and sample_objs and (ansible_hostname == hostvars[groups['smps'][0]].ansible_hostname)
+  ignore_errors: yes

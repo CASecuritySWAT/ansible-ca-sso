@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XPS xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"
+    xs:noNamespaceSchemaLocation="CA_SiteMinder_WAM-XPS2.xsd">
+    <XPSVersion>1</XPSVersion>
+    <PolicyData IsDumpExport="false">
+        <References>
+            <ReferenceValue ReferenceId="Ref00001">
+                <StringValue>uid=superuser,ou=people,ou=northamerica,{{ user_base_dn }}</StringValue>
+            </ReferenceValue>
+            <ReferenceValue ReferenceId="Ref00002">
+{% if hostvars[groups['pstore'][0]].internal_lb is defined %}
+                <StringValue>{{ hostvars[groups['pstore'][0]].internal_lb + ":" + userstore_port|string }}</StringValue>
+{% else %}
+<StringValue>{% for host in groups['pstore'] %}{{ host }}:{{ userstore_port }}{% if not loop.last %} {% endif %}
+{% endfor %}
+</StringValue>
+{% endif %}
+            </ReferenceValue>
+            <ReferenceValue ReferenceId="Ref00003">
+                <StringValue>{{ user_base_dn }}</StringValue>
+            </ReferenceValue>
+        </References>
+        <Object Class="CA.SM::UserDirectory" Xid="CA.SM::UserDirectory@0e-000ae370-74c6-17b4-834c-45cd0a82a0fe" CreatedDateTime="2016-08-17T15:29:25" UpdatedBy="siteminder" UpdateMethod="GUI" ExportType="Replace">
+            <Property Name="CA.SM::UserDirectory.UseAdvancedAuthStore">
+                <BooleanValue>false</BooleanValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.PasswordAttribute">
+                <StringValue>userPassword</StringValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.SearchScope">
+                <NumberValue>2</NumberValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.EnableSecurityContext">
+                <BooleanValue>false</BooleanValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.SearchRoot">
+                <LinkValue><XREF>Ref00003</XREF></LinkValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.Name">
+                <StringValue>Sample User Directory</StringValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.RequireCredentials">
+                <BooleanValue>true</BooleanValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.Password" Sensitive="Yes">
+                <StringValue>{{ vault_default_user_password }}</StringValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.UniversalIDAttribute">
+                <StringValue>uid</StringValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.EmailAddrAttribute">
+                <StringValue>mail</StringValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.SecureConnection">
+                <BooleanValue>false</BooleanValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.UserLookupEnd">
+                <StringValue>)</StringValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.Server">
+                <LinkValue><XREF>Ref00002</XREF></LinkValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.UserLookupStart">
+                <StringValue>(uid=</StringValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.SearchTimeout">
+                <NumberValue>30</NumberValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.SearchResults">
+                <NumberValue>0</NumberValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.Username">
+                <LinkValue><XREF>Ref00001</XREF></LinkValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.Namespace">
+                <StringValue>LDAP:</StringValue>
+            </Property>
+        </Object><!-- Xid="CA.SM::UserDirectory@0e-000ae370-74c6-17b4-834c-45cd0a82a0fe" -->
+    </PolicyData>
+</XPS>

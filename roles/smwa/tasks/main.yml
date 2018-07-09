@@ -1,0 +1,163 @@
+---
+- name: Install the pre-requisite packages
+  yum: name="{{ item }}" state=latest
+  with_items: "{{ smwa_pkgs64 }}"
+  tags: pkg
+
+- name: Install tomcat6
+  yum: name=tomcat6 state=latest
+  tags: tomcat
+  when: ansible_distribution_major_version == "6"
+
+- name: Install tomcat7
+  yum: name=tomcat state=latest
+  tags: tomcat
+  when: ansible_distribution_major_version == "7"
+
+- name: Set tomcat_root/wa_apache_version variable for RHEL6
+  set_fact: tomcat_root="/usr/share/tomcat6" wa_apache_version="2.2.15"
+  tags: tomcat
+  when: ansible_distribution_major_version == "6"
+
+- name: Set tomcat_root/wa_apache_version variable for RHEL7
+  set_fact: tomcat_root="/usr/share/tomcat" wa_apache_version="2.4.6"
+  tags: tomcat
+  when: ansible_distribution_major_version == "7"
+
+- name: Disable selinux
+  selinux: state=disabled
+  when: not (ansible_virtualization_type == "docker")
+  ignore_errors: yes
+
+- name: Copy /etc/sysconfig/rngd
+  copy: src=files/rngd dest=/etc/sysconfig/rngd
+  tags: rngd
+  when: (ansible_distribution_major_version == "6" and ansible_virtualization_type != "docker")
+
+- name: Copy /etc/systemd/system/rngd.service
+  copy: src=files/rngd.service dest=/etc/systemd/system/rngd.service
+  tags: rngd
+  when: (ansible_distribution_major_version == "7" and ansible_virtualization_type != "docker")
+
+- name: Enable rngd on RHEL 6
+  service: name=rngd state=started enabled=yes
+  tags: rngd
+  when: (ansible_distribution_major_version == "6" and ansible_virtualization_type != "docker")
+
+- name: Enable rngd on RHEL 7
+  systemd: name=rngd daemon_reload=yes state=started enabled=yes
+  tags: rngd
+  when: (ansible_distribution_major_version == "7" and ansible_virtualization_type != "docker")
+
+- name: Disable local firewall on RHEL 6
+  service: name=iptables state=stopped enabled=no
+  tags: iptables
+  when: (ansible_distribution_major_version == "6" and ansible_virtualization_type != "docker")
+  ignore_errors: yes
+
+- name: Disable local firewall on RHEL 7
+  service: name=firewalld state=stopped enabled=no
+  tags: iptables
+  when: (ansible_distribution_major_version == "7" and ansible_virtualization_type != "docker")
+  ignore_errors: yes
+
+- name: Add proxy rule to /etc/httpd/conf/httpd.conf
+  blockinfile: dest=/etc/httpd/conf/httpd.conf block={{ httpd_proxy_block }}
+  tags: httpd
+
+- name: Create webapps/ROOT directory
+  file: path={{ tomcat_root }}/webapps/ROOT state=directory mode="u+rw,g+r,o+r"
+  tags: tomcat
+
+- name: Copy header.jsp example
+  template: src=header.jsp.j2 dest={{ tomcat_root }}/webapps/ROOT/header.jsp mode=0755
+  tags: tomcat
+
+- name: Download the web agent installer
+  get_url: url={{ download_base_url }}/{{ smwa_installer_zip }} dest={{ temp_dir }} mode=0755
+  tags: smwa
+  when: download_base_url is defined
+
+- name: Copy across the web agent installer
+  copy: src=files/{{ smwa_installer_zip }} dest={{ temp_dir }} mode=0755
+  tags: smwa
+  when: download_base_url is undefined
+
+- name: unzip the web agent installer
+  shell: echo "A" |  unzip {{ temp_dir }}/{{ smwa_installer_zip }} chdir={{ temp_dir }} creates={{ temp_dir }}/{{ smwa_installer }}
+  tags: smwa
+
+- name: remove the web agent installer zip for space
+  file: path={{ temp_dir }}/{{ smwa_installer_zip }} state=absent
+  tags: smwa
+
+- name: Change installer permissions
+  file: path={{ temp_dir }}/{{ smwa_installer }} mode=0755
+  tags: smwa
+
+- name: Write the web agent properties file for installation
+  template: src=ca-wa-installer.properties.j2 dest={{ temp_dir }}/ca-wa-installer.properties mode=0755
+  tags: smwa
+
+- name: Execute the web agent silent install
+  shell: ./{{ smwa_installer }} -i silent -f {{ temp_dir }}/ca-wa-installer.properties executable=/bin/bash chdir={{ temp_dir }} creates={{ wa_install_dir }}
+  tags: smwa
+
+- name: Execute the web agent config wizard
+  shell: . {{ wa_install_dir }}/ca_wa_env.sh; ./ca-wa-config.bin -i silent -f {{ temp_dir }}/ca-wa-installer.properties executable=/bin/bash chdir={{ wa_install_dir }}/install_config_info
+  tags: smwa 
+
+- name: Cleaning up installer and property file
+  file: path={{ item }} state=absent
+  with_items:
+    - "{{ temp_dir }}/{{ smwa_installer }}"
+    - "{{ temp_dir }}/ca-wa-installer.properties"
+  tags: smwa
+
+- name: Source web agent environment file in httpd init script
+  lineinfile: dest=/etc/init.d/httpd line=". {{ wa_install_dir }}/ca_wa_env.sh" insertafter="^. /etc/rc.d/init.d/functions"
+  tags: smwa
+  when: ansible_distribution_major_version == "6"
+
+- name: Source web agent environment file in apachectl
+  lineinfile: dest=/usr/sbin/apachectl line=". {{ wa_install_dir }}/ca_wa_env.sh" insertafter="^HTTPD='/usr/sbin/httpd'"
+  tags: smwa
+  when: ansible_distribution_major_version == "6"
+
+- name: Add web agent variables to /etc/sysconfig/httpd
+  blockinfile:
+    path: /etc/sysconfig/httpd
+    block: |
+      NETE_WA_ROOT={{ wa_install_dir }}
+      NETE_WA_PATH={{ wa_install_dir }}/bin
+      CAPKIHOME={{ wa_install_dir }}/CAPKI
+      LD_LIBRARY_PATH={{ wa_install_dir }}/bin:{{ wa_install_dir }}/bin/thirdparty
+      PATH={{ wa_install_dir }}/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin
+  tags: httpd
+  when: ansible_distribution_major_version == "7"
+
+- name: Create /var/log/smwa for web agent logs
+  file: path=/var/log/smwa state=directory mode=0755 owner=apache group=apache
+  tags: smwa
+
+- name: Change group of SmHost.conf to apache
+  file: path={{ wa_install_dir }}/config/SmHost.conf group=apache
+  tags: smwa
+
+- name: Start httpd
+  service: name=httpd state=started enabled=yes
+  tags: smwa
+
+- name: Start tomcat6
+  service: name=tomcat6 state=started enabled=yes
+  tags: smwa
+  when: ansible_distribution_major_version == "6"
+
+- name: Start tomcat7
+  service: name=tomcat state=started enabled=yes
+  tags: smwa
+  when: ansible_distribution_major_version == "7"
+
+- name: Create .ansible_smwa status file
+  file: path={{ wa_install_dir }}/install_config_info/.ansible_smwa state=touch mode=0644
+  tags: smwa

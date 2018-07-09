@@ -1,0 +1,114 @@
+﻿### General Information
+DEFAULT_INSTALL_DIR={{ smps_install_dir }}
+DEFAULT_SHORTCUTS_DIR=
+DEFAULT_JRE_ROOT={{ jre_root }}
+DEFAULT_BROWSER=
+DEFAULT_SMPROFILE_CHOICE=
+DEFAULT_ENCRYPTKEY={{ encryption_key }}
+CA_SM_PS_FIPS140={{ fips }}
+
+### Feature Selection
+DEFAULT_OVMGUI_CHOICE=false
+DEFAULT_WEBSERVERS_CHOICE=false
+DEFAULT_SNMP_CHOICE=false
+{% if hostvars[groups['pstore'][0]].db_type != 'LDAP_CADIR' %}
+DEFAULT_POLICYSTORE_CHOICE=true
+{% else %}
+DEFAULT_POLICYSTORE_CHOICE=false
+{% endif %}
+
+## Adding this key value pair to support silent install ADAM policy store
+DEFAULT_XPS_POLICYSTORE_TYPE=
+
+### OneView Monitor GUI
+DEFAULT_JDK_ROOT=
+DEFAULT_SERVLETEXEC_INSTANCE_NAME=
+DEFAULT_SERVLETEXEC_ROOT=
+DEFAULT_TOMCAT_ROOT=
+
+### Web Server(s)
+# This is a list of web server instance information.
+#   Format:       instance_name_1,root_folder_1;instance_name_2,root_folder_2; etc...
+#   Examples:     To configure IIS,
+#                 DEFAULT_WEBSERVER_INFO=IIS,
+#                 To configure Apache and a Sun instance,
+#                 DEFAULT_WEBSERVER_INFO=,/usr/apache2;suninstance,/usr/sunwebserverroot
+#
+DEFAULT_WEBSERVER_INFO=
+DEFAULT_WEBSERVER_ROOT=
+
+### SNMP
+# DEFAULT_ROOT_PW=<To define cleartext root password, insert string here and uncomment line.>
+ENCRYPTED_ROOT_PW=
+
+
+### Policy Store
+### For LDAP, DEFAULT_POLICYSTORE_TYPE=LDAP and for ODBC DEFAULT_POLICYSTORE_TYPE=RDB
+{% if hostvars[groups['pstore'][0]].db_type != 'LDAP_CADIR' %}
+DEFAULT_POLICYSTORE_TYPE=RDB
+{% else %}
+DEFAULT_POLICYSTORE_TYPE=
+{% endif %}
+DEFAULT_POLICYSTORE_IP=
+DEFAULT_POLICYSTORE_PORT=
+DEFAULT_POLICYSTORE_ADMINDN=
+# DEFAULT_POLICYSTORE_ADMINPW=<To define cleartext LDAP Admin password, insert string here and uncomment line.>
+ENCRYPTED_POLICYSTORE_ADMINPW=
+DEFAULT_POLICYSTORE_ROOTDN=
+DEFAULT_POLICYSTORE_USER_CHOICE=
+DEFAULT_POLICYSTORE_USERDN=
+# DEFAULT_POLICYSTORE_USERPW=<To define cleartext LDAP user password, insert string here and uncomment line.>
+ENCRYPTED_POLICYSTORE_USERPW=
+{% if ansible_hostname != hostvars[groups['smps'][0]].ansible_hostname %}
+DEFAULT_INIT_POLICYSTORE_CHOICE=false
+{% elif db_type == "LDAP_CADIR" %}
+DEFAULT_INIT_POLICYSTORE_CHOICE=false
+{% else %}
+DEFAULT_INIT_POLICYSTORE_CHOICE={{ init_ps_store }}
+{% endif %}
+DEFAULT_SM_ADMINPW={{ siteminder_password }}
+
+### Policy Store ODBC 
+## Supported RDB Types are MS SQL Server2005,2008 and ORACLE10g,11i,12c.
+## In case of Oracle, DEFAULT_RDB_DBNAME should contain Oracle Service Name.
+## In SQL, DEFAULT_RDB_DBNAME should contain SQL Named Instance or Database Name.
+## Possible value for DEFAULT_RDB_DBTYPE, For SQL - DB_MSSQL and Oracle - DB_ORACLE
+## Specify a PARAM_DSN value if you want to specify different Database source name. It is an optional.
+{% if hostvars[groups['pstore'][0]].db_type != 'LDAP_CADIR' %}
+DEFAULT_RDB_DSN=CA SiteMinder DSN
+DEFAULT_RDB_DBSERVER={{ db_server }}
+DEFAULT_RDB_DBNAME={{ db_name }}
+DEFAULT_RDB_PORT={{ db_port }}
+DEFAULT_RDB_USERNAME={{ db_user }}
+DEFAULT_RDB_DBTYPE={{ db_type }}
+DEFAULT_RDB_PASSWORD={{ db_password }}
+{% else %}
+DEFAULT_RDB_DSN=
+DEFAULT_RDB_DBSERVER=
+DEFAULT_RDB_DBNAME=
+DEFAULT_RDB_PORT=
+DEFAULT_RDB_USERNAME=
+DEFAULT_RDB_DBTYPE=
+DEFAULT_RDB_PASSWORD=
+{% endif %}
+
+# Import default CA certificates
+{% if hostvars[groups['pstore'][0]].db_type != 'LDAP_CADIR' %}
+DEFAULT_SMKEYDB_IMPORT_CHOICE=true
+{% else %}
+DEFAULT_SMKEYDB_IMPORT_CHOICE=false
+{% endif %}
+
+# Enabling Password Services
+# Supported Password Services are Advanced Password Services (APS), Basic Password Services (BPS)
+PASSWORD_RESULT=Basic Password Services
+
+# Master Key Details
+# Use below key if you want to supply password in plain text
+MASTER_KEY={{ master_key }}
+
+{% if hostvars[groups['pstore'][0]].db_type != 'LDAP_CADIR' %}
+IS_SA_ENABLED=true
+{% else %}
+IS_SA_ENABLED=false
+{% endif %}

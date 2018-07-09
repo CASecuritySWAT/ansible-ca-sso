@@ -1,0 +1,127 @@
+temp_dir: /tmp
+sso_version: 12.8
+# Install binary download location. If undefined/commented out, the installers should be placed in the files directory of the playbook.
+download_base_url: http://download.example.com:80/artifactory/generic-release-local/SSO/12.8/
+jdk_tgz: jdk-8u171-linux-x64.tar.gz
+jdk_path: /opt/jdk1.8.0_171
+ps_installer_zip: ca-ps-12.8-linux-x86-64.zip
+adminui_prereq_installer_zip: adminui-pre-req-12.8-linux-x86-64.zip
+admin_installer_zip: ca-adminui-12.8-linux-x86-64.zip
+sps_installer_zip: ca-proxy-12.8-linux-x86-64.zip
+smwa_installer_zip: smwa-12.52-sp01-cr05-linux-x86-64.zip
+# Name of installer file within zip
+ps_installer: ca-ps-12.8-linux-x86-64.bin
+adminui_prereq_installer: adminui-pre-req-12.8-linux-x86-64.bin
+adminui_installer: ca-adminui-12.8-linux-x86-64.bin
+sps_installer: ca-proxy-12.8-linux-x86-64.bin
+smwa_installer: ca-wa-12.52-sp01-cr05-linux-x86-64.bin
+
+###### CHANGE ME ######
+
+os_hardening: false
+# Entries added to /etc/hosts in case no DNS is available or for different internal/external mappings
+#add_host_entry: false
+#db_host_entry: "23.97.9.175 {{ db_server }}"
+#ps_host_entry: "{{ hostvars[groups['smps'][0]]['ansible_default_ipv4']['address'] }} {{ hostvars[groups['smps'][0]].ansible_hostname }} {{ hostvars[groups['smps'][0]].ansible_fqdn }}"
+#sps_host_entry: "{{ hostvars[groups['sps'][0]]['ansible_default_ipv4']['address'] }} {{ hostvars[groups['sps'][0]].ansible_hostname }} {{ hostvars[groups['sps'][0]].ansible_fqdn }}"
+
+# Policy Server. Policy store information is specified in the inventory.
+db_server: "{{ hostvars[groups['pstore'][0]].inventory_hostname }}"
+db_name: "{{ hostvars[groups['pstore'][0]].db_name }}"
+db_port: "{{ hostvars[groups['pstore'][0]].db_port }}"
+db_user: "{{ hostvars[groups['pstore'][0]].db_user }}"
+db_type: "{{ hostvars[groups['pstore'][0]].db_type }}"
+init_ps_store: 'true'
+# Import sample certificate, domain, SAML IDP objects
+sample_objs: true
+# fips can be ONLY, COMPAT, or MIGRATE
+fips: COMPAT
+
+# Admin UI Pre-requisite
+# Make sure this resolves to a local interface or the app server will fail to bind to port
+adminui_host: '{{ ansible_hostname }}'
+# External hostname/port where Admin UI will be accessed. This example uses Ansible inventory connection host if defined, or else use the inventory hostname by default.
+external_adminui_host: '{{ external_fqdn|default(inventory_hostname) }}'
+
+# Access Gateway
+trusted_hostname: '{{ ansible_hostname }}_sps'
+# DefaultHostSettings will be created by default with the playbook
+default_hco: DefaultHostSettings
+# In HA installation this will be replaced with a collection of all SMPS hostnames in template
+ps_server: "{{ hostvars[groups['smps'][0]].ansible_hostname }}"
+aco: SPSACO
+agent_name: sps
+# For apache_server_name, the first defined variable will be used in the following order: sps_lb in inventory, or external_fqdn if defined, or inventory_hostname in inventory by default.
+apache_server_name: '{{ external_fqdn|default(inventory_hostname) }}'
+apache_admin_email: admin@sample.domain
+# Default forwarding destination instead of http://www.ca.com. If undefined, proxyrules.xml will not be touched.
+default_proxy_forward: http://app.example.com
+# 12.8 variables
+ag_registry: /opt/etc
+instance_name: default
+
+# Apache HTTPD Web Agent
+wa_trusted_hostname: '{{ ansible_hostname }}_wa'
+wa_aco: ApacheACO
+wa_agent_name: apache
+# wa_apache_version is now set in tasks depending on OS version
+#wa_apache_version: 2.2.15
+
+###### END CHANGE ME ######
+
+###### SENSITIVE DATA ######
+encryption_key: '{{ vault_encryption_key }}'
+siteminder_password: '{{ vault_siteminder_password }}'
+db_password: '{{ vault_db_password }}'
+master_key: '{{ vault_master_key }}'
+
+###### DEFAULTS ######
+
+# Policy Server
+smps_install_dir: /opt/CA/siteminder
+jre_root: /opt/jdk/jre
+
+# Admin UI Pre-requisite
+prereq_install_dir: /opt/CA
+adminui_port: 8080
+# 12.6 parameters
+adminui_ssl_port: 8443
+adminui_messaging_port: 5445
+adminui_messsaging_throughput_port: 5455
+adminui_multicast_port: 9876
+
+# Access Gateway
+sps_install_dir: /opt/CA/secure-proxy
+user_shortcuts: /root
+jdk_root: /opt/jdk
+host_reg: 1
+admin_name: siteminder
+secret_rollover: 0
+smhost_file: SmHost.conf
+smhost_dir: /opt/CA/secure-proxy/proxy-engine/conf/defaultagent
+smwa_file: WebAgent.conf
+smwa_dir: /opt/CA/secure-proxy/proxy-engine/conf/defaultagent
+apache_http_port: 80
+apache_https_port: 443
+tomcat_user: nobody
+tomcat_http_port: 8080
+tomcat_ssl_port: 543
+enable_webagent: 'YES'
+enable_fed_gateway: 'yes'
+shutdown_port: 8005
+ajp_port: 8009
+
+# Web agent
+wa_install_dir: /opt/CA/webagent
+wa_host_reg: 1
+wa_admin_name: siteminder
+wa_secret_rollover: 0
+wa_smhost_file: SmHost.conf
+wa_smhost_dir: /opt/CA/webagent/config
+wa_apache_root: /etc/httpd
+wa_enable_agent: 'YES'
+# tomcat_root is now set in tasks based on OS version
+#tomcat_root: /usr/share/tomcat6
+httpd_proxy_block: |
+  ProxyPass               /app               http://localhost:8080
+  ProxyPassReverse        /app               http://localhost:8080

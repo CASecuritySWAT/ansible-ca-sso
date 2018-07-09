@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by CA SiteMinder Version 12.52.0104.2032
+     by os:root
+     at 17:00:29 on 2016-05-18 -->
+<!-- Uses schema "CA_SiteMinder_WAM-XPS2.xsd". This file
+     can be found on policy servers under siteminder/db -->
+<XPS xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"
+    xs:noNamespaceSchemaLocation="CA_SiteMinder_WAM-XPS2.xsd">
+    <XPSVersion>1</XPSVersion>
+    <PolicyData IsDumpExport="false">
+        <References>
+            <ReferenceValue ReferenceId="Ref00001">
+                <StringValue>{{ db_user }}</StringValue>
+            </ReferenceValue>
+            <ReferenceValue ReferenceId="Ref00002">
+                <StringValue>CA SiteMinder DSN</StringValue>
+            </ReferenceValue>
+        </References>
+        <Object Class="CA.SM::ODBCQuery" Xid="CA.SM::ODBCQuery@18-00057e46-6247-1733-84ac-0003ac12d07d" CreatedDateTime="2016-05-11T16:48:07" ModifiedDateTime="2016-05-11T16:48:07" UpdatedBy="siteminder" UpdateMethod="GUI" ExportType="Add">
+            <Property Name="CA.SM::ODBCQuery.QuerySetGroupProp">
+                <StringValue>UPDATE SmGroup SET %s = &apos;%s&apos; WHERE Name = &apos;%s&apos;</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryLookupUser">
+                <StringValue>SELECT Name, &apos;User&apos; AS Class FROM SmUser WHERE %s</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryGetGroupProp">
+                <StringValue>SELECT %s FROM SmGroup WHERE Name = &apos;%s&apos;</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryGetUserProp">
+                <StringValue>SELECT %s FROM SmUser WHERE Name = &apos;%s&apos;</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryAddUserToGroup">
+                <StringValue>INSERT INTO SmUserGroup (ID, UserID, GroupID) (SELECT DISTINCT CASE WHEN MAX(ID) IS NULL THEN 1 ELSE MAX(ID)+1    END, (SELECT UserID FROM SmUser WHERE Name = &apos;%s&apos;), (SELECT GroupID FROM SmGroup WHERE Name = &apos;%s&apos;) FROM SmUserGroup)</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryNewUser">
+                <StringValue>INSERT INTO SmUser  (UserID, Name %s)  (SELECT DISTINCT CASE WHEN MAX(UserID)  IS NULL THEN 1 ELSE MAX(UserID)+1  END, &apos;%s&apos; %s FROM SmUser)</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.Name">
+                <StringValue>Sample User Query Scheme</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryDeleteUser">
+                <StringValue>DELETE FROM SmUser WHERE Name=&apos;%s&apos;</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryInitUser">
+                <StringValue>SELECT Name FROM SmUser WHERE Name = &apos;%s&apos;</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryAuthenticateUser">
+                <StringValue>SELECT Name FROM SmUser WHERE Name = &apos;%s&apos; AND Password = &apos;%s&apos;</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryDeleteGroup">
+                <StringValue>DELETE FROM SmGroup WHERE Name=&apos;%s&apos;</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryNewGroup">
+                <StringValue>INSERT INTO SmGroup (GroupID, Name %s) (SELECT DISTINCT CASE WHEN MAX(GroupID) IS NULL THEN 1 ELSE MAX(GroupID)+1 END, &apos;%s&apos; %s FROM SmGroup)</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryGetGroupMembers">
+                <StringValue>SELECT smUser.Name FROM smUser, SmUserGroup, smGroup WHERE smUser.UserID=SmUserGroup.UserID AND SmUserGroup.GroupID=SmGroup.GroupID AND SmGroup.Name = &apos;%s&apos;</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryGetGroups">
+                <StringValue>SELECT SmGroup.Name from SmGroup, SmUser, SmUserGroup where SmUser.Name = &apos;%s&apos; and SmUser.UserID = SmUserGroup.UserID and SmGroup.GroupID = SmUserGroup.GroupID</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryGetObjInfo">
+                <StringValue>SELECT Name, &apos;User&apos; FROM SmUser WHERE Name = &apos;%s&apos; UNION SELECT Name, &apos;Group&apos; FROM SmGroup WHERE Name = &apos;%s&apos;</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QuerySetPassword">
+                <StringValue>UPDATE SmUser SET Password = &apos;%s&apos; WHERE Name = &apos;%s&apos;</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryLookupGroup">
+                <StringValue>SELECT Name, &apos;Group&apos; AS Class FROM SmGroup WHERE %s</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryIsGroupMember">
+                <StringValue>SELECT ID FROM SmUserGroup WHERE UserID = (SELECT UserID FROM SmUser WHERE Name = &apos;%s&apos;) AND GroupID = (SELECT GroupID FROM SmGroup WHERE Name = &apos;%s&apos;)</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryEnumerate">
+                <StringValue>SELECT Name, &apos;Group&apos; AS Class FROM SmGroup ORDER BY Class</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryGetGroupProps">
+                <StringValue>Name, GroupID</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QuerySetUserProp">
+                <StringValue>UPDATE SmUser SET %s = &apos;%s&apos; WHERE Name = &apos;%s&apos;</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.UserNotStringAttribute">
+                <StringValue>Mileage</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryGetUserProps">
+                <StringValue>Name, UserID, FirstName, LastName, TelephoneNumber, EmailAddress, Disabled, PIN, Mileage, PasswordData</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryRemoveUserFromGroup">
+                <StringValue>DELETE FROM SmUserGroup WHERE UserID = (SELECT UserID FROM SmUser WHERE Name = &apos;%s&apos;) AND GroupID=(SELECT GroupID FROM SmGroup WHERE Name = &apos;%s&apos;)</StringValue>
+            </Property>
+            <Property Name="CA.SM::ODBCQuery.QueryLookup">
+                <StringValue>SELECT Name, &apos;User&apos; AS Class FROM SmUser WHERE Name %s UNION SELECT Name, &apos;Group&apos; AS Class FROM SmGroup WHERE Name %s ORDER BY Class</StringValue>
+            </Property>
+        </Object><!-- Xid="CA.SM::ODBCQuery@18-00057e46-6247-1733-84ac-0003ac12d07d" -->
+        <Object Class="CA.SM::UserDirectory" Xid="CA.SM::UserDirectory@0e-000afdd6-6247-1733-84ac-0003ac12d07d" CreatedDateTime="2016-05-11T16:48:07" ModifiedDateTime="2016-05-11T16:48:32" UpdatedBy="siteminder" UpdateMethod="GUI" ExportType="Replace">
+            <Property Name="CA.SM::UserDirectory.UseAdvancedAuthStore">
+                <BooleanValue>false</BooleanValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.PasswordAttribute">
+                <StringValue>Password</StringValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.SearchScope">
+                <NumberValue>2</NumberValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.EnableSecurityContext">
+                <BooleanValue>false</BooleanValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.Name">
+                <StringValue>Sample User Store</StringValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.RequireCredentials">
+                <BooleanValue>true</BooleanValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.Password" Sensitive="Yes">
+                <StringValue>{{ db_password }}</StringValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.UniversalIDAttribute">
+                <StringValue>Name</StringValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.SecureConnection">
+                <BooleanValue>false</BooleanValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.DisabledAttribute">
+                <StringValue>Disabled</StringValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.BlobAttribute">
+                <StringValue>PasswordData</StringValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.Server">
+                <LinkValue><XREF>Ref00002</XREF></LinkValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.SearchTimeout">
+                <NumberValue>30</NumberValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.ODBCQueryLink">
+                <LinkValue>
+                    <XID>CA.SM::ODBCQuery@18-00057e46-6247-1733-84ac-0003ac12d07d</XID>
+                </LinkValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.SearchResults">
+                <NumberValue>0</NumberValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.Username">
+                <LinkValue><XREF>Ref00001</XREF></LinkValue>
+            </Property>
+            <Property Name="CA.SM::UserDirectory.Namespace">
+                <StringValue>ODBC:</StringValue>
+            </Property>
+        </Object><!-- Xid="CA.SM::UserDirectory@0e-000afdd6-6247-1733-84ac-0003ac12d07d" -->
+    </PolicyData>
+</XPS>
+<!-- 17:00:29 2016-05-18 -->

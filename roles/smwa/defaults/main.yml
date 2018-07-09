@@ -1,0 +1,5 @@
+smwa_pkgs64:
+  - rng-tools.x86_64
+  - unzip
+  - java-1.7.0-openjdk
+  - httpd

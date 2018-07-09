@@ -1,0 +1,114 @@
+#!/bin/bash
+#
+# smadminui        Starts CA WAMUI.
+#
+### BEGIN INIT INFO
+# Provides: smadminui
+# Required-Start: $local_fs $network
+# Should-Start: psconfig
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Description: CA Single Sign-On Administrative UI
+### END INIT INFO
+
+# Source function library.
+. /etc/init.d/functions
+
+#set -x
+
+JBOSS_USER="smuser"
+JBOSS_ROOT="/opt/CA/siteminder/adminui"
+RUN_PATH="/opt/CA/siteminder/adminui/bin"
+{% if (sso_version is version('12.6', '<')) %}
+RUN_FILE="run.sh"
+SHUTDOWN_FILE=shutdown.sh
+{% else %}
+RUN_FILE="standalone.sh"
+SHUTDOWN_FILE="jboss-cli.sh --connect --command=:shutdown --timeout=60000"
+{% endif %}
+JBOSS_EAP="false"
+
+export PATH=/opt/java64/bin:$PATH
+# Set ulimit to 10240 if below.
+# Note if ulimit is already set manually to a lower value,
+# in the files /etc/profile and the /etc/bashrc, this may not take effect.
+LIM=`ulimit -n`
+if [ $LIM -lt 10240 ]; then
+                ulimit -n 10240
+fi
+
+
+function start_wamui()
+{
+        #  This is for clustering
+        echo "Starting CA WAMUI"
+
+        if [ -z "$RUN_PATH" ] ; then
+                logger -i -s "[ERROR] The required environment variable RUN_PATH is empty"
+                exit 1
+        fi
+
+        if [ -z "$RUN_FILE" ] ; then
+                logger -i -s "[ERROR] The required environment variable RUN_FILE is empty"
+                exit 1
+        fi
+
+        if [ -z "$JBOSS_USER" ] ; then
+                logger -i -s "[ERROR] The required environment variable JBOSS_USER is empty"
+                exit 1
+        fi
+
+        BACK_TO=`/bin/pwd`
+        su - "$JBOSS_USER" -c "cd '$RUN_PATH'; /usr/bin/nohup './$RUN_FILE' >> nohup.out 2>&1 &"
+        ret=$?
+        return $ret
+}
+
+
+stop_wamui ()
+{
+        echo "Stopping CA WAMUI"
+
+        su  "$JBOSS_USER" -c "cd '$RUN_PATH'; ./$SHUTDOWN_FILE"
+        ret=$?
+        return $ret
+}
+
+
+
+
+
+RETVAL=0
+
+start() {
+        start_wamui
+        RETVAL=$?
+        echo
+        return $RETVAL
+}
+stop() {
+        stop_wamui
+        RETVAL=$?
+        echo
+        return $RETVAL
+}
+restart() {
+        stop
+        start
+}
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart)
+        restart
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|restart}"
+        exit 2
+esac
+
+exit $?

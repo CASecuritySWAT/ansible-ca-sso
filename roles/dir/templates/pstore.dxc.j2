@@ -1,0 +1,17 @@
+# CA DXserver/config/knowledge/
+#
+# Refer to the Admin Guide for the format of the set dsa command.
+
+set dsa "{{ pstore_dsa_name_host }}" =
+{
+    prefix        = {{ pstore_dsa_prefix }}
+    dsa-name      = {{ pstore_dsa_prefix }}<cn {{ pstore_dsa_name_host }}>
+    dsa-password  = "secret"
+    address       = tcp "{{ pstore_hostname }}" port {{ pstore_port }}
+    disp-psap     = DISP
+    snmp-port     = {{ pstore_port }}
+    console-port  = {{ pstore_console_port }}
+    auth-levels   = clear-password
+    dsa-flags     = multi-write, no-service-while-recovering
+    trust-flags   = allow-check-password, trust-conveyed-originator
+};

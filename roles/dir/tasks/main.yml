@@ -1,0 +1,221 @@
+---
+- name: Install libselinux-python and which
+  yum: name="{{ item }}" state=latest
+  with_items:
+    - libselinux-python
+    - which
+  tags: pkg
+
+- name: Disable selinux
+  selinux: state=disabled
+  when: not (ansible_virtualization_type == "docker")
+  ignore_errors: yes
+
+#- name: Create etrdir group
+#  group: name=etrdir state=present
+#  tags: dsauser
+
+#- name: Create dsa user
+#  user: name=dsa group=etrdir shell=/bin/bash
+#  tags: dsauser
+
+- name: Disable dxagent install for CentOS/Red Hat 6 due to pyOpenSSL requirement
+  set_fact: install_dxagent='n'
+  tags: dir
+  when: (ansible_distribution_major_version == "6")
+
+- name: Unarchive Directory installer using download link
+  unarchive: src={{ dir_download_base_url }}/{{ dir_install_tgz }} dest={{ temp_dir }} copy=no
+  tags: dir
+  when: dir_download_base_url is defined
+
+- name: Unarchive Directory installer
+  unarchive: src=files/{{ dir_install_tgz }} dest={{ temp_dir }}
+  tags: dir
+  when: dir_download_base_url is undefined
+
+- name: Unarchive Directory Management UI installer using download link
+  unarchive: src={{ dir_download_base_url }}/{{ dir_ui_install_tgz }} dest={{ temp_dir }} copy=no
+  tags: dir_ui
+  when: (dir_download_base_url is defined) and (ansible_distribution_major_version != "6")
+
+- name: Unarchive Directory Management UI installer
+  unarchive: src=files/{{ dir_ui_install_tgz }} dest={{ temp_dir }}
+  tags: dir_ui
+  when: (dir_download_base_url is undefined) and (ansible_distribution_major_version != "6")
+
+- name: Write the properties file for installation
+  template: src=cadir_install.properties.j2 dest={{ temp_dir }}/cadir_install.properties mode=0755
+  tags: dir
+
+- name: Write the properties file for Management UI installation
+  template: src=cadir_ui_install.properties.j2 dest={{ temp_dir }}/cadir_ui_install.properties mode=0755
+  tags: dir
+  when: (ansible_distribution_major_version != "6")
+
+- name: Execute the Directory silent install
+  shell: ./dxsetup.sh -silent -responsefile {{ temp_dir }}/cadir_install.properties 1>{{ temp_dir }}/ansible_dirinstall.log 2>&1 executable=/bin/bash chdir={{ temp_dir }}/dxserver/install creates={{ dir_install_dir }}/dxserver/install/VERSION
+  tags: dir
+
+- name: Execute the Directory Management UI silent install
+  shell: ./dxmgmtuisetup.sh -silent -responsefile {{ temp_dir }}/cadir_ui_install.properties 1>{{ temp_dir }}/ansible_diruiinstall.log 2>&1 executable=/bin/bash chdir={{ temp_dir }}/management-ui/install creates={{ dir_install_dir }}/Directory/management-ui/config.js
+  tags: dir_ui
+  when: (ansible_distribution_major_version != "6")
+
+- name: Write settings.dxc with min-auth set to clear-password
+  template: src=settings.dxc.j2 dest={{ dir_install_dir }}/dxserver/config/settings/settings.dxc mode="u=rw,g=r" owner=dsa group=etrdir
+  tags: dir
+
+- name: Configure dxserver service
+  service: name=dxserver state=started enabled=yes
+  tags: dir
+
+### Sample user store
+
+- name: Copy sample user initialization file
+  template: src=userstore.dxi.j2 dest={{ dir_install_dir }}/dxserver/config/servers/{{ user_dsa_name_host }}.dxi mode="u=rw,g=r" owner=dsa group=etrdir
+  vars:
+    user_dsa_name_host: "{{ user_dsa_name }}_{{ ansible_hostname }}"
+  when: (sample_user_store|default(false))
+  tags: userstore
+
+- name: Copy sample user knowledge file
+  template: src=userstore.dxc.j2 dest={{ dir_install_dir }}/dxserver/config/knowledge/{{ user_dsa_name_host }}.dxc mode="u=rw,g=r" owner=dsa group=etrdir
+  vars:
+    user_dsa_name_host: "{{ user_dsa_name }}_{{ hostvars[item].ansible_hostname }}"
+    userstore_hostname: "{{ hostvars[item].ansible_nodename }}"
+  with_items: "{{ groups['dir'] }}"
+  when: (sample_user_store|default(false))
+  tags: userstore
+
+- name: Copy user store knowledge dxg file
+  template: src=userstore.dxg.j2 dest={{ dir_install_dir }}/dxserver/config/knowledge/{{ user_dsa_name }}.dxg mode="u=rw,g=r" owner=dsa group=etrdir
+  when: (sample_user_store|default(false))
+  tags: userstore
+
+- name: Copy sample user ldif
+  template: src=SampleUserDirectory.ldi.j2 dest={{ temp_dir }}/SampleUserDirectory.ldi mode=0755
+  when: (sample_user_store|default(false))
+  tags: userstore
+
+- name: Copy IM schema files
+  template: src={{ item }}.j2 dest={{ dir_install_dir }}/dxserver/config/schema/{{ item }} mode="u=rw,g=r" owner=dsa group=etrdir
+  with_items:
+    - im_user.dxc
+    - im_user_aux.dxc
+    - im.dxg
+  when: (sample_user_store|default(false))
+  tags: userstore
+
+- name: Install and start sample user directory
+  shell: . {{ dir_install_dir }}/dxserver/install/.dxprofile; dxnewdb {{ user_dsa_name_host }}; dxloaddb {{ user_dsa_name_host }} {{ temp_dir }}//SampleUserDirectory.ldi; dxserver install {{ user_dsa_name_host }}; dxserver start {{ user_dsa_name_host }}; echo > {{ dir_install_dir }}/dxserver/install/.ansible_sample_user_store creates={{ dir_install_dir }}/dxserver/install/.ansible_sample_user_store
+  vars:
+    user_dsa_name_host: "{{ user_dsa_name }}_{{ ansible_hostname }}"
+  become: yes
+  become_user: dsa
+  when: (sample_user_store|default(false))
+  tags: userstore
+
+- name: Remove sample user ldif
+  file: name={{ temp_dir }}/SampleUserDirectory.ldi state=absent
+  when: (sample_user_store|default(false))
+  tags: userstore
+
+### SSO policy store
+
+- name: Copy policy store initialization file
+  template: src=pstore.dxi.j2 dest={{ dir_install_dir }}/dxserver/config/servers/{{ pstore_dsa_name_host }}.dxi mode="u=rw,g=r" owner=dsa group=etrdir
+  vars:
+    pstore_dsa_name_host: "{{ pstore_dsa_name }}_{{ ansible_hostname }}"
+  when: (sso_pstore|default(false))
+  tags: pstore
+
+- name: Copy policy store knowledge dxc file
+  template: src=pstore.dxc.j2 dest={{ dir_install_dir }}/dxserver/config/knowledge/{{ pstore_dsa_name_host }}.dxc mode="u=rw,g=r" owner=dsa group=etrdir
+  vars:
+    pstore_dsa_name_host: "{{ pstore_dsa_name }}_{{ hostvars[item].ansible_hostname }}"
+    pstore_hostname: "{{ hostvars[item].ansible_nodename }}"
+  with_items: "{{ groups['dir'] }}"
+  when: (sso_pstore|default(false))
+  tags: pstore
+
+- name: Copy policy store knowledge dxg file
+  template: src=pstore.dxg.j2 dest={{ dir_install_dir }}/dxserver/config/knowledge/{{ pstore_dsa_name }}.dxg mode="u=rw,g=r" owner=dsa group=etrdir
+  when: (sso_pstore|default(false))
+  tags: pstore
+
+- name: Copy policy store limits file
+  copy: src=files/limits/smpolicy.dxc dest={{ dir_install_dir }}/dxserver/config/limits/{{ pstore_dsa_name }}.dxc mode="u=rw,g=r" owner=dsa group=etrdir
+  when: (sso_pstore|default(false))
+  tags: pstore
+
+- name: Copy policy store schema files
+  copy: src=files/schema dest={{ dir_install_dir }}/dxserver/config mode="u=rw,g=r" owner=dsa group=etrdir
+  when: (sso_pstore|default(false))
+  tags: pstore
+
+- name: Copy policy store ldif
+  template: src=pstore.ldi.j2 dest={{ temp_dir }}/pstore.ldi mode=0755
+  when: (sso_pstore|default(false))
+  tags: pstore
+
+- name: Install and start policy store directory
+  shell: . {{ dir_install_dir }}/dxserver/install/.dxprofile; dxnewdb {{ pstore_dsa_name_host }}; dxloaddb {{ pstore_dsa_name_host }} {{ temp_dir }}/pstore.ldi; dxserver install {{ pstore_dsa_name_host }}; dxserver start {{ pstore_dsa_name_host }}; echo > {{ dir_install_dir }}/dxserver/install/.ansible_sso_policy_store creates={{ dir_install_dir }}/dxserver/install/.ansible_sso_policy_store
+  vars:
+    pstore_dsa_name_host: "{{ pstore_dsa_name }}_{{ ansible_hostname }}"
+  become: yes
+  become_user: dsa
+  when: (sso_pstore|default(false))
+  tags: pstore
+
+- name: Remove policy store ldif
+  file: name={{ temp_dir }}//pstore.ldi state=absent
+  when: (sso_pstore|default(false))
+  tags: pstore
+
+### SSO session store
+
+- name: Copy session store initialization file
+  template: src=sstore.dxi.j2 dest={{ dir_install_dir }}/dxserver/config/servers/{{ sstore_dsa_name_host }}.dxi mode="u=rw,g=r" owner=dsa group=etrdir
+  vars:
+    sstore_dsa_name_host: "{{ sstore_dsa_name }}_{{ ansible_hostname }}"
+  when: (sso_sstore|default(false))
+  tags: sstore
+
+- name: Copy session store knowledge dxc file
+  template: src=sstore.dxc.j2 dest={{ dir_install_dir }}/dxserver/config/knowledge/{{ sstore_dsa_name_host }}.dxc mode="u=rw,g=r" owner=dsa group=etrdir
+  vars:
+    sstore_dsa_name_host: "{{ sstore_dsa_name }}_{{ hostvars[item].ansible_hostname }}"
+    sstore_hostname: "{{ hostvars[item].ansible_nodename }}"
+  with_items: "{{ groups['dir'] }}"
+  when: (sso_sstore|default(false))
+  tags: sstore
+
+- name: Copy session store knowledge dxg file
+  template: src=sstore.dxg.j2 dest={{ dir_install_dir }}/dxserver/config/knowledge/{{ sstore_dsa_name }}.dxg mode="u=rw,g=r" owner=dsa group=etrdir
+  when: (sso_sstore|default(false))
+  tags: sstore
+
+- name: Copy session store limits file
+  copy: src=files/limits/smsession.dxc dest={{ dir_install_dir }}/dxserver/config/limits/{{ sstore_dsa_name }}.dxc mode="u=rw,g=r" owner=dsa group=etrdir
+  when: (sso_sstore|default(false))
+  tags: sstore
+
+- name: Copy session store ldif
+  template: src=sstore.ldi.j2 dest={{ temp_dir }}/sstore.ldi mode=0755
+  when: (sso_sstore|default(false))
+  tags: sstore
+
+- name: Install and start session store directory
+  shell: . {{ dir_install_dir }}/dxserver/install/.dxprofile; dxnewdb {{ sstore_dsa_name_host }}; dxloaddb {{ sstore_dsa_name_host }} {{ temp_dir }}/sstore.ldi; dxserver install {{ sstore_dsa_name_host }}; dxserver start {{ sstore_dsa_name_host }}; echo > {{ dir_install_dir }}/dxserver/install/.ansible_sso_session_store creates={{ dir_install_dir }}/dxserver/install/.ansible_sso_session_store
+  vars:
+    sstore_dsa_name_host: "{{ sstore_dsa_name }}_{{ ansible_hostname }}"
+  become: yes
+  become_user: dsa
+  when: (sso_sstore|default(false))
+  tags: sstore
+
+- name: Remove session store ldif
+  file: name={{ temp_dir }}//sstore.ldi state=absent
+  when: (sso_sstore|default(false))
+  tags: sstore

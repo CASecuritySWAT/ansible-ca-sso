@@ -1,0 +1,239 @@
+---
+- name: Enable RHEL optional and extras rpms repository
+  shell: subscription-manager repos --enable {{ item }}
+  with_items:
+    - "rhel-{{ ansible_distribution_major_version }}-server-optional-rpms"
+    - "rhel-{{ ansible_distribution_major_version }}-server-extras-rpms"
+  tags: pkg
+  when: (ansible_distribution == "RedHat")
+
+- name: Install the pre-requisite 64-bit multilib packages for 12.5x
+  yum: name="{{ item }}" state=latest
+  with_items: "{{ smsps_pkgs64 }}"
+  tags: pkg
+  when: sso_version is version('12.6', '<')
+
+- name: Install the pre-requisite 32-bit packages for 12.5x
+  yum: name="{{ item }}" state=latest
+  with_items: "{{ smsps_pkgs32 }}"
+  tags: pkg
+  when: sso_version is version('12.6', '<')
+
+- name: Install the pre-requisite packages for 12.6
+  yum: name="{{ item }}" state=latest
+  with_items: "{{ smsps126_pkgs }}"
+  tags: pkg
+  when: sso_version is version('12.6', '>=')
+
+- name: Disable selinux
+  selinux: state=disabled
+  when: not (ansible_virtualization_type == "docker")
+  ignore_errors: yes
+
+- name: Unarchive JDK using download link
+  unarchive: src={{ download_base_url }}/{{ jdk_tgz }} dest=/opt copy=no
+  tags: jdk
+  when: download_base_url is defined
+
+- name: Unarchive JDK
+  unarchive: src=files/{{ jdk_tgz }} dest=/opt
+  tags: jdk
+  when: download_base_url is undefined
+
+- name: Create jdk symlink
+  file: src={{ jdk_path }} dest=/opt/jdk state=link
+  tags: jdk
+
+- name: Copy Unlimited JCE for JDK7
+  copy: src=files/UnlimitedJCEPolicy/{{ item }} dest=/opt/jdk/jre/lib/security
+  with_items:
+    - local_policy.jar
+    - US_export_policy.jar
+  tags: jdk
+  when: sso_version is version('12.6', '<')
+
+- name: Copy Unlimited JCE for JDK8 Update < 151
+  copy: src=files/UnlimitedJCEPolicyJDK8/{{ item }} dest=/opt/jdk/jre/lib/security
+  with_items:
+    - local_policy.jar
+    - US_export_policy.jar
+  tags: jdk
+  when: (sso_version is version('12.6', '>=')) and (jdk_tgz.split("-")[1].split("u")[1] < 151)
+
+- name: Copy /etc/sysconfig/rngd
+  copy: src=files/rngd dest=/etc/sysconfig/rngd
+  tags: rngd
+  when: (ansible_distribution_major_version == "6" and ansible_virtualization_type != "docker")
+
+- name: Copy /etc/systemd/system/rngd.service
+  copy: src=files/rngd.service dest=/etc/systemd/system/rngd.service
+  tags: rngd
+  when: (ansible_distribution_major_version == "7" and ansible_virtualization_type != "docker")
+
+- name: Enable rngd on RHEL 6
+  service: name=rngd state=started enabled=yes
+  tags: rngd
+  when: (ansible_distribution_major_version == "6" and ansible_virtualization_type != "docker")
+
+- name: Enable rngd on RHEL 7
+  systemd: name=rngd daemon_reload=yes state=started enabled=yes
+  tags: rngd
+  when: (ansible_distribution_major_version == "7" and ansible_virtualization_type != "docker")
+
+- name: Disable local firewall on RHEL 6
+  service: name=iptables state=stopped enabled=no
+  tags: iptables
+  when: (ansible_distribution_major_version == "6" and ansible_virtualization_type != "docker")
+  ignore_errors: yes
+
+- name: Disable local firewall on RHEL 7
+  service: name=firewalld state=stopped enabled=no
+  tags: iptables
+  when: (ansible_distribution_major_version == "7" and ansible_virtualization_type != "docker")
+  ignore_errors: yes
+
+- name: Download the SPS installer
+  get_url: url={{ download_base_url }}/{{ sps_installer_zip }} dest={{ temp_dir }} mode=0755
+  tags: sps
+  when: download_base_url is defined
+
+- name: Copy across the SPS installer
+  copy: src=files/{{ sps_installer_zip }} dest={{ temp_dir }} mode=0755
+  tags: sps 
+  when: download_base_url is undefined
+
+- name: unzip the SPS installer
+  shell: echo "A" |  unzip {{ temp_dir }}/{{ sps_installer_zip }} chdir={{ temp_dir }} creates={{ temp_dir }}/{{ sps_installer }}
+  tags: sps
+
+- name: remove the SPS installer zip for space
+  file: path={{ temp_dir }}/{{ sps_installer_zip }} state=absent
+  tags: sps
+
+- name: Change installer permissions
+  file: path={{ temp_dir }}/{{ sps_installer }} mode=0755
+  tags: sps
+
+- name: Write the SPS properties file for installation
+  template: src=ca-sps-installer.properties.j2 dest={{ temp_dir }}/ca-sps-installer.properties mode=0755
+  tags: sps
+
+- name: Execute the SPS silent install
+  shell: ./{{ sps_installer }} -i silent -f {{ temp_dir }}/ca-sps-installer.properties executable=/bin/bash chdir={{ temp_dir }} creates={{ sps_install_dir }}
+  tags: sps
+
+- name: check if the SPS installer process is running
+  shell: ps -ef | grep {{ sps_installer }} | grep -v grep | awk '{ print $10 }'
+  register: result
+  until: result.stdout.find(sps_installer) == -1
+  retries: 40
+  delay: 60
+  tags: sps
+
+- name: remove the SPS installer for space
+  file: path={{ temp_dir }}/{{ sps_installer }} state=absent
+  tags: sps
+
+- name: Execute the SPS config wizard 
+  shell: . {{ sps_install_dir }}/ca_sps_env.sh; ./ca-sps-config.bin -i silent -f {{ temp_dir }}/ca-sps-installer.properties executable=/bin/bash chdir={{ sps_install_dir }}/install_config_info
+  tags: sps
+
+- name: Delete the silent install property file
+  file: path={{ temp_dir }}/ca-sps-installer.properties state=absent
+  tags: sps
+
+- name: Copy sample forms to the right directory
+  shell: cp -an {{ sps_install_dir }}/proxy-engine/examples/forms/* {{ sps_install_dir }}/proxy-engine/examples/siteminderagent/forms/
+  when: sso_version is version('12.6', '<')
+  tags: sps
+  ignore_errors: yes
+
+- name: Change default forwarding destination
+  replace: dest={{ sps_install_dir }}/proxy-engine/conf/proxyrules.xml regexp='http://www.ca.com' replace="{{ default_proxy_forward }}"
+  when: default_proxy_forward is defined
+  tags: sps
+  ignore_errors: yes
+
+- name: Generate self-signed certificate
+  shell: openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /opt/CA/secure-proxy/SSL/keys/server.key -out /opt/CA/secure-proxy/SSL/certs/server.crt -sha256 -subj '/O=CA Self-signed/CN={{ apache_server_name }}'
+  tags: sps
+
+- name: Copy sps init script
+  template: src=sps.j2 dest=/etc/init.d/sps mode=0755
+  tags: sps
+
+- name: Configure sps service
+  service: name=sps enabled=yes
+  tags: sps
+
+- name: Set enablerewritecookiedomain and enableproxypreservehost
+  replace: dest={{ sps_install_dir }}/proxy-engine/conf/server.conf regexp='{{ item }}="no"' replace='{{ item }}="yes"' backup=yes
+  with_items:
+    - enablerewritecookiedomain
+    - enableproxypreservehost
+  tags: sps_config
+
+- name: Add redirectrewrite parameters
+  blockinfile:
+    dest: "{{ sps_install_dir }}/proxy-engine/conf/server.conf"
+    marker: "# {mark} Ansible redirectrewrite block"
+    insertafter: 'defaultsessionscheme="default"'
+    block: |
+      enableredirectrewrite="yes"
+      redirectrewritablehostnames="{{ external_fqdn|regex_replace('^(?P<host>[^.]+)\..*$', '\g<host>') }},{{ external_fqdn }}"
+  tags: sps_config
+
+- name: Set SSLVerifyClient to none
+  replace: dest={{ sps_install_dir }}/httpd/conf/extra/httpd-ssl.conf regexp='SSLVerifyClient optional' replace='SSLVerifyClient none' backup=yes
+  tags: sps_config
+
+- name: Set http_connection_pool_max_size to 100
+  replace: dest={{ sps_install_dir }}/proxy-engine/conf/server.conf regexp='http_connection_pool_max_size="420"' replace='http_connection_pool_max_size="100"' backup=yes
+  tags: sps_config
+
+- name: Set http_connection_pool_wait_timeout to 200
+  replace: dest={{ sps_install_dir }}/proxy-engine/conf/server.conf regexp='http_connection_pool_wait_timeout="0"' replace='http_connection_pool_wait_timeout="200"' backup=yes
+  tags: sps_config
+
+- include_tasks: config.yml
+  when: sps_config|default(false)
+
+- name: Stop SPS on RHEL 7 using sps-ctl as systemd does not have current state
+  shell: /opt/CA/secure-proxy/proxy-engine/sps-ctl stop | /usr/bin/logger
+  when: (sso_version is version('12.6', '>=')) and (ansible_distribution_major_version == "7")
+  tags: sps
+  ignore_errors: yes
+
+- name: Stop SPS
+  service: name=sps state=stopped pattern=secure-proxy
+  when: (sso_version is version('12.6', '>=')) and (ansible_distribution_major_version == "6")
+  tags: sps
+  ignore_errors: yes
+
+- name: Pause for 60 seconds before stopping SPS again as an ugly workaround
+  pause: seconds=60
+  when: sso_version is version('12.6', '>=')
+  tags: sps
+
+- name: Stop SPS on RHEL 7 using sps-ctl as systemd does not have current state
+  shell: /opt/CA/secure-proxy/proxy-engine/sps-ctl stop | /usr/bin/logger
+  when: (sso_version is version('12.6', '>=')) and (ansible_distribution_major_version == "7")
+  tags: sps
+
+- name: Stop SPS
+  service: name=sps state=stopped pattern=secure-proxy
+  when: (sso_version is version('12.6', '>=')) and (ansible_distribution_major_version == "6")
+  tags: sps
+
+- name: Check if SPS is running
+  shell: ps -ef | grep secure-proxy | grep -v grep | awk '{ print $8 }'
+  register: result
+  until: result.stdout == ""
+  retries: 6
+  delay: 5
+  when: sso_version is version('12.6', '>=')
+  tags: sps
+
+- name: Start SPS
+  service: name=sps state=started pattern=secure-proxy
+  tags: sps

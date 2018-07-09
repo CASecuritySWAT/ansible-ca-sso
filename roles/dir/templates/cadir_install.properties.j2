@@ -1,0 +1,36 @@
+# ==============================
+#   CA Directory Response File
+# ==============================
+# 12.6.03 build 14056
+# Sun Sep 24 21:39:00 UTC 2017
+
+# User parameters
+INSTUSER=root
+DXUSER={{ dir_dxuser }}
+DXSHELL=/bin/bash
+DXUID=
+DXGROUP={{ dir_dxgroup }}
+DXGID=
+
+# Install parameters
+INSTALLDX=y
+INSTALLDOC=
+INSTALLDXAGENT={{ install_dxagent }}
+SETUID=n
+LEGACY_SETUID=
+
+# Location parameters
+ETDIRHOME={{ dir_install_dir }}
+DXHOME={{ dir_install_dir }}/dxserver
+CAPKILOC={{ dir_sharedcomp_dir }}
+
+# DXagent parameters
+DXAGENTCLIENT={{ dir_dxagent_client }}
+DXAGENTPORT={{ dir_dxagent_port }}
+DXAGENTPASS={{ dir_dxagent_password }}
+
+# Upgrade parameters
+BACKUPBIN=
+BACKUPLOC=
+RESTARTDSAS=
+

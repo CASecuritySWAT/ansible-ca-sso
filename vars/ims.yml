@@ -1,0 +1,51 @@
+temp_dir: /tmp
+# Install binary download location. If undefined/commented out, the installers should be placed in the files directory of the playbook.
+ims_download_base_url: http://download.example.com/artifactory/generic-release-local/IM/14.1/
+ims_install_tar: ims-linux-14.1.0.tar
+jdk_tgz: jdk-8u171-linux-x64.tar.gz
+wildfly_zip: wildfly-8.2.1.Final.zip
+ims_installer: ca-im-14.1.0-linux.bin
+ims_install_dir: /opt/CA/IdentityManager
+jdk_path: /opt/jdk1.8.0_171
+
+# Components can be Server,Exten,Admin,Provision,Directory,OOTB
+ims_components: 'Server,Admin,OOTB'
+ims_generic_user: imadmin
+ims_imadmin_password: "{{ vault_imadmin_password }}"
+# ims_secure_mgmt_console will be ignored when ims_use_siteminder is true
+ims_secure_mgmt_console: 'false'
+ims_config_remote_prov: 'false'
+# 1. Compact 2. Basic 3. Intermediate (64 Bit only) 4. Large (64 Bit only)
+ims_deployment_size: 2
+ims_domain: im
+fips: 'false'
+ims_key_params: 'false'
+ims_app_server: JBoss7
+ims_port: 8080
+ims_url: http://{{ ansible_fqdn }}:{{ ims_port }}
+ims_jboss_path: /opt/wildfly-8.2.1.Final
+ims_jboss_profile: all
+ims_jboss_server_id: "{{ groups.im.index(inventory_hostname) | int + 1 }}"
+ims_jboss_cluster_install: 1
+ims_jboss_cluster_unicast: 'false'
+ims_jboss_cluster_replication: 'true'
+ims_use_siteminder: 'true'
+ims_agent_name: imuser
+
+# DB type can be mssql2005 or oracle10
+ims_db_type: oracle10
+ims_db_server: "{{ hostvars[groups['pstore'][0]].inventory_hostname }}"
+ims_db_name: "{{ hostvars[groups['pstore'][0]].db_name }}"
+ims_db_port: "{{ hostvars[groups['pstore'][0]].db_port }}"
+ims_db_user: "{{ hostvars[groups['pstore'][0]].ims_db_user }}"
+ims_db_password: "{{ vault_db_password }}"
+
+multicast_address: '230.0.0.55'
+messaging_multicast_address: '231.7.7.55'
+modcluster_multicast_address: '224.0.1.155'
+
+# OOTB settings
+default_cadir_user_store: 1
+default_userstore_name: UserStore
+default_ime_base_url: https://{{ hostvars[groups['sps'][groups.im.index(inventory_hostname)]].sps_lb|default(hostvars[groups['sps'][groups.im.index(inventory_hostname)]].external_fqdn) }}:{{ hostvars[groups['sps'][groups.im.index(inventory_hostname)]].external_sps_port }}/iam/im
+default_ime_title: 'Identity Manager'

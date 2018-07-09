@@ -1,0 +1,41 @@
+SM
+{% if (sso_version is version('12.7', '>=')) %}
+91
+{% else %}
+90
+{% endif %}
+c
+{{ sstore_admin_dn }}
+q
+{% if (sso_version is version('12.7', '>=')) %}
+93
+{% else %}
+92
+{% endif %}
+c
+{{ sstore_base_dn }}
+q
+{% if (sso_version is version('12.7', '>=')) %}
+94
+{% else %}
+93
+{% endif %}
+c
+{% if hostvars[groups['pstore'][0]].internal_lb is defined %}
+{{ hostvars[groups['pstore'][0]].internal_lb + ':' + sstore_port|string }}
+{% else %}
+{% for host in groups['pstore'] %}
+{{ host }}:{{ sstore_port }}{% if not loop.last %} {% endif %}
+{% endfor %}
+{% endif %}
+
+q
+{% if (sso_version is version('12.7', '>=')) %}
+95
+{% else %}
+94
+{% endif %}
+c
+q
+q
+q

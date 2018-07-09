@@ -1,0 +1,78 @@
+---
+- name: Check if system hostname is set to localhost
+  fail: msg='The server hostname is localhost and will cause issues with deployment. Please configure all systems in inventory correctly with proper hostnames and DNS before continuing with deployment.'
+  when: ansible_hostname == "localhost"
+  tags: check_localhost
+
+- name: Install common packages
+  yum: name={{ item }} state=latest
+  with_items:
+    - libselinux-python
+    - sudo
+#    - epel-release
+    - sysvinit-tools
+    - initscripts
+  tags: commonpkgs
+
+- name: Update /etc/yum.conf to avoid multilib issues during update
+  lineinfile: dest=/etc/yum.conf regexp="exactarch=1" line="exactarch=0" state=present
+  tags: yumconf
+
+- name: Update /etc/yum.conf to avoid multilib issues during update
+  lineinfile: dest=/etc/yum.conf line="multilib_policy=all" state=present
+  tags: yumconf
+
+- name: Remove 127.0.1.1 host entry
+  lineinfile: dest=/etc/hosts regexp="^127.0.1.1.*" state=absent
+  tags: hosts
+  ignore_errors: yes
+
+- name: Set hostname in /etc/sysconfig/network on RHEL 6 Docker containers
+  lineinfile: dest=/etc/sysconfig/network regexp="HOSTNAME=localhost.localdomain" line="HOSTNAME={{ ansible_fqdn }}" state=present
+  tags: hostname
+  when: (ansible_distribution_major_version == "6" and ansible_virtualization_type == "docker")
+
+- name: Remove Defaults requiretty in /etc/sudoers
+  lineinfile: dest=/etc/sudoers regexp="^Defaults.*requiretty.*" state=absent
+  tags: requiretty
+  ignore_errors: yes
+
+- name: Disable iptables
+  service: name=iptables state=stopped enabled=no
+  tags: iptables
+  when: (ansible_distribution_major_version == "6" and ansible_virtualization_type != "docker")
+  ignore_errors: yes
+
+- name: Disable firewalld
+  systemd: name=firewalld state=stopped enabled=no
+  tags: firewalld
+  when: (ansible_distribution_major_version == "7" and ansible_virtualization_type != "docker")
+  ignore_errors: yes
+
+#- name: Add host entries
+#  blockinfile:
+#     dest: /etc/hosts
+#     block: |
+#        {{ item }}
+#     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item }}"
+#  with_items:
+#        - "{{ db_host_entry }}"
+#        - "{{ ps_host_entry }}"
+#        - "{{ sps_host_entry }}"
+#  tags: hosts
+#  when: add_host_entry
+#  ignore_errors: yes
+
+#- name: Copy over hardening script
+#  copy: src=files/saasops_hardening.sh dest=/tmp owner=root mode=0755
+#  when: os_hardening
+
+#- name: Execute hardening script
+#  shell: /tmp/saasops_hardening.sh 1>/tmp/saasops_hardening.log 2>&1 executable=/bin/bash creates=/var/log/ca-install/hardening.log
+#  async: 7200
+#  poll: 10
+#  when: os_hardening
+
+#- name: Prompt for reboot
+#  pause: prompt="Check to ensure no errors in /var/log/ca-install, and NTP servers are correct/reachable. Reboot the machine to complete the hardening process."
+#  when: os_hardening

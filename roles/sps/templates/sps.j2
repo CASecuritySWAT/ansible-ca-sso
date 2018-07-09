@@ -1,0 +1,23 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides: sps
+# Required-Start: $local_fs $network
+# Should-Start: agconfig
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Description: CA Access Gateway
+### END INIT INFO
+# this script starts and stops the SiteMinder Secure Proxy Server
+# at boot time
+
+case "$1" in
+
+'start' | 'startssl')
+{{ sps_install_dir }}/proxy-engine/sps-ctl startssl
+;;
+
+'stop')
+{{ sps_install_dir }}/proxy-engine/sps-ctl stop
+;;
+
+esac

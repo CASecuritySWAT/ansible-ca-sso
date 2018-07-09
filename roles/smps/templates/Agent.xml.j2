@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by CA SiteMinder Version 12.52.0104.2032
+     by os:root
+     at 16:55:56 on 2016-05-18 -->
+<!-- Uses schema "CA_SiteMinder_WAM-XPS2.xsd". This file
+     can be found on policy servers under siteminder/db -->
+<XPS xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"
+    xs:noNamespaceSchemaLocation="CA_SiteMinder_WAM-XPS2.xsd">
+    <XPSVersion>1</XPSVersion>
+    <PolicyData IsDumpExport="false">
+        <References>
+            <ReferenceObject ReferenceId="Ref00001" ObjectClass="CA.SM::AgentType">
+            <Xid>CA.SM::AgentType@10-8d78bb96-ae15-11d1-9cdd-006008aac24b</Xid>
+            <Attribute Name="CA.SM::AgentType.Name" Type="Identity">
+                <StringValue>Web Agent</StringValue>
+            </Attribute>
+            <Attribute Name="CA.SM::AgentType.Desc" Type="Comment">
+                <StringValue>SiteMinder Web Agent</StringValue>
+            </Attribute>
+            </ReferenceObject>
+        </References>
+        <Object Class="CA.SM::Agent" Xid="CA.SM::Agent@01-000a7d2e-4b22-1733-84ac-0003ac12d07d" CreatedDateTime="2016-05-11T15:09:22" ModifiedDateTime="2016-05-11T15:09:22" UpdatedBy="siteminder" UpdateMethod="GUI" ExportType="Replace">
+            <Property Name="CA.SM::Agent.AgentTypeLink">
+                <LinkValue>
+                    <XREF>Ref00001</XREF>
+                </LinkValue>
+            </Property>
+            <Property Name="CA.SM::Agent.RealmHintAttrId">
+                <NumberValue>0</NumberValue>
+            </Property>
+            <Property Name="CA.SM::Agent.Name">
+                <StringValue>{{ agent_name }}</StringValue>
+            </Property>
+        </Object><!-- Xid="CA.SM::Agent@01-000a7d2e-4b22-1733-84ac-0003ac12d07d" -->
+    </PolicyData>
+</XPS>
+<!-- 16:55:56 2016-05-18 -->

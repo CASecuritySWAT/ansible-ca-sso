@@ -1,0 +1,37 @@
+#
+# logging and tracing
+source "../logging/default.dxc";
+
+# schema
+clear schema;
+source "../schema/smpolicy.dxg";
+
+# knowledge
+clear dsas;
+source "../knowledge/{{ pstore_dsa_name }}.dxg";
+
+# operational settings
+source "../settings/settings.dxc";
+
+# service limits
+source "../limits/{{ pstore_dsa_name }}.dxc";
+
+# access controls
+clear access;
+source "../access/default.dxc";
+
+# ssl
+source "../ssld/default.dxc";
+
+# replication agreements (rarely used)
+# source "../replication/";
+
+# multiwrite DISP recovery
+set multi-write-disp-recovery = false;
+
+# grid configuration
+set dxgrid-db-location = "data";
+set dxgrid-db-size = {{ pstore_db_size }};
+set cache-index = all-attributes;
+set lookup-cache = true;
+set ignore-name-bindings = true;

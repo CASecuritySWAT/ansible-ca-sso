@@ -1,0 +1,71 @@
+---
+- hosts: all
+  tasks:
+    - action: setup
+
+- import_playbook: dir.yml
+  when: (groups['dir']|length > 0)
+
+- hosts: smps
+  serial: 1
+  vars_files:
+    - vars/vault.yml
+    - vars/ims.yml
+    - vars/dir.yml
+    - vars/sso.yml
+  roles:
+    - role: common
+    - role: smps
+      tags: all
+
+- hosts: sps
+  vars_files:
+    - vars/vault.yml
+    - vars/ims.yml
+    - vars/aa.yml
+    - vars/sso.yml
+  roles:
+    - role: common
+    - role: sps
+      tags: all
+
+- hosts: localhost
+  vars_files:
+    - vars/vault.yml
+    - vars/sso.yml
+  tasks:
+  - name: Access Admin UI from Ansible control machine to complete registration
+    uri:
+      url: https://{{ hostvars[item].external_fqdn|default(hostvars[item].inventory_hostname) }}:{{ hostvars[item].external_adminui_port }}/iam/siteminder/adminui
+      method: POST
+      body: "username=siteminder&password={{ siteminder_password }}&address={{ hostvars[item].ansible_hostname }}"
+      headers:
+          Content-Type: "application/x-www-form-urlencoded"
+          Accept: "text/html"
+      validate_certs: no
+      follow_redirects: all
+      timeout: 120
+    with_items: "{{ groups['smps'] }}"
+    ignore_errors: yes
+
+- hosts: smwa
+  vars_files:
+    - vars/vault.yml
+    - vars/sso.yml
+  roles:
+    - role: common
+    - role: smwa
+
+- hosts: localhost
+  vars_files:
+    - vars/sso.yml
+  tasks:
+  - name: Print environment information
+    vars:
+      msg: |
+           Environment URLs:
+             Admin UI - https://{{ hostvars[groups['smps'][0]].external_fqdn|default(hostvars[groups['smps'][0]].inventory_hostname) }}:{{ hostvars[groups['smps'][0]].external_adminui_port }}/iam/siteminder/adminui
+             Unprotected Access Gateway app - https://{{ hostvars[groups['sps'][0]].external_fqdn|default(hostvars[groups['sps'][0]].inventory_hostname) }}:<sps_port>/header.jsp
+             Protected Web Agent app - http://<smwa_fqdn>:<httpd_port>/app/header.jsp
+    debug: msg="{{ msg.split('\n') }}"
+    when: (hostvars[groups['smps'][0]].ansible_connection|default('')) == 'docker'

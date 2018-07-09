@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<?cocoon-process type="xslt"?>
+<!DOCTYPE nete:proxyrules SYSTEM "file:////opt/CA/secure-proxy/proxy-engine/conf/dtd/proxyrules.dtd">
+
+<!-- Proxy Rules-->
+<nete:proxyrules xmlns:nete="http://www.ca.com/">
+<nete:cond criteria="beginswith" type="uri">
+{% if groups['im']|length > 0 %}
+  <nete:case value="/iam/im/">
+    <nete:forward>http://{{ hostvars[groups['pstore'][0]].internal_lb|default(hostvars[groups['im'][play_hosts.index(inventory_hostname)]].ansible_hostname) }}:{{ ims_port }}$0</nete:forward>
+  </nete:case>
+  <nete:case value="/castylesr5.1.1/">
+    <nete:forward>http://{{ hostvars[groups['pstore'][0]].internal_lb|default(hostvars[groups['im'][play_hosts.index(inventory_hostname)]].ansible_hostname) }}:{{ ims_port }}$0</nete:forward>
+  </nete:case>
+{% endif %}
+{% if groups['aa']|length > 0 %}
+  <nete:case value="/arcotafm/">
+    <nete:forward>https://{{ hostvars[groups['pstore'][0]].internal_lb|default(hostvars[groups['aa'][play_hosts.index(inventory_hostname)]].ansible_hostname) }}:{{ afmport }}$0</nete:forward>
+  </nete:case>
+{% endif %}
+{% if groups['cabi']|length > 0 %}
+  <nete:case value="/jasperserver-pro/">
+{% if hostvars[groups['pstore'][0]].internal_lb is defined %}
+    <nete:forward>http://{{ hostvars[groups['pstore'][0]].internal_lb }}:7080$0</nete:forward>
+{% else %}
+    <nete:forward>http://{{ hostvars[groups['cabi'][play_hosts.index(inventory_hostname)]].ansible_hostname }}:8080$0</nete:forward>
+{% endif %}
+  </nete:case>
+{% endif %}
+{% if groups['im']|length > 0 %}
+  <nete:default>
+    <!-- No match, default forwarding to IM -->
+    <nete:forward>http://{{ hostvars[groups['pstore'][0]].internal_lb|default(hostvars[groups['im'][play_hosts.index(inventory_hostname)]].ansible_hostname) }}:{{ ims_port }}$0</nete:forward>
+  </nete:default>
+{% else %}
+  <nete:default>
+    <!-- No match, default forwarding -->
+    <nete:forward>{{ default_proxy_forward }}$0</nete:forward>
+  </nete:default>
+{% endif %}
+</nete:cond>
+</nete:proxyrules>

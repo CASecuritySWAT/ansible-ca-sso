@@ -1,0 +1,29 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides: smps
+# Required-Start: $local_fs $network
+# Should-Start: psconfig
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Description: CA Single Sign-On Policy Server
+### END INIT INFO
+# this script starts and stops the siteminder policy server
+# at boot time
+
+/bin/find {{ smps_install_dir }} -user root |/usr/bin/xargs /bin/chown smuser:smuser > /dev/null 2>&1
+
+case "$1" in
+
+'start')
+
+su - smuser -c /opt/CA/siteminder/start-all &
+
+;;
+
+'stop')
+
+su - smuser -c /opt/CA/siteminder/stop-all
+
+;;
+
+esac

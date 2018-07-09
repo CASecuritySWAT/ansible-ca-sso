@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by CA SiteMinder Version 12.52.0104.2032
+     by os:root
+     at 16:54:19 on 2016-05-18 -->
+<!-- Uses schema "CA_SiteMinder_WAM-XPS2.xsd". This file
+     can be found on policy servers under siteminder/db -->
+<XPS xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"
+    xs:noNamespaceSchemaLocation="CA_SiteMinder_WAM-XPS2.xsd">
+    <XPSVersion>1</XPSVersion>
+    <PolicyData IsDumpExport="false">
+        <References>
+{% if hostvars[groups['pstore'][0]].internal_lb is defined %}
+            <ReferenceValue ReferenceId="Ref00001">
+                <StringValue>{{ hostvars[groups['pstore'][0]].internal_lb }},44441,44442,44443</StringValue>
+            </ReferenceValue>
+{% else %}
+{% for host in groups['smps'] %}
+            <ReferenceValue ReferenceId="Ref{{ loop.index }}">
+                <StringValue>{{ hostvars[host]['ansible_hostname'] }},44441,44442,44443</StringValue>
+            </ReferenceValue>
+{% endfor %}
+{% endif %}
+        </References>
+        <Object Class="CA.SM::HostConfig" Xid="CA.SM::HostConfig@21-eaf30a00-e8f9-11d5-ba50-0010a4911ff4" CreatedDateTime="2016-05-11T14:39:39" ModifiedDateTime="2016-05-11T15:09:07" UpdatedBy="siteminder" UpdateMethod="GUI" ExportType="Replace">
+            <Property Name="CA.SM::HostConfig.NewSocketStep">
+                <NumberValue>2</NumberValue>
+            </Property>
+            <Property Name="CA.SM::HostConfig.MinSocketsPerPort">
+                <NumberValue>2</NumberValue>
+            </Property>
+            <Property Name="CA.SM::HostConfig.EnableFailOver">
+                <BooleanValue>true</BooleanValue>
+            </Property>
+            <Property Name="CA.SM::HostConfig.PolicyServer">
+{% if hostvars[groups['pstore'][0]].internal_lb is defined %}
+                <LinkValue><XREF>Ref00001</XREF></LinkValue>
+{% else %}
+{% for host in groups['smps'] %}
+                <LinkValue><XREF>Ref{{ loop.index }}</XREF></LinkValue>
+{% endfor %}
+{% endif %}
+            </Property>
+            <Property Name="CA.SM::HostConfig.Name">
+                <StringValue>{{ default_hco }}</StringValue>
+            </Property>
+            <Property Name="CA.SM::HostConfig.RequestTimeout">
+                <NumberValue>60</NumberValue>
+            </Property>
+            <Property Name="CA.SM::HostConfig.MaxSocketsPerPort">
+                <NumberValue>20</NumberValue>
+            </Property>
+        </Object><!-- Xid="CA.SM::HostConfig@21-eaf30a00-e8f9-11d5-ba50-0010a4911ff4" -->
+    </PolicyData>
+</XPS>
+<!-- 16:54:19 2016-05-18 -->

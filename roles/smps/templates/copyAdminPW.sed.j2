@@ -1,0 +1,13 @@
+#!/usr/bin/sed -f
+#
+# The purpose of the sed script is to populate AdminPW value of LdapSessionServer registry in sm.registry
+# with value from LdapPolicyStore. This is needed because currently the XPS Config utility does not allow
+# setting LDAP-based session store password.
+#
+
+/^HKEY_LOCAL_MACHINE\\SOFTWARE\\Netegrity\\SiteMinder\\CurrentVersion\\LdapPolicyStore=/,/^HKEY_/{
+    /^AdminPW/h;
+};
+/^HKEY_LOCAL_MACHINE\\SOFTWARE\\Netegrity\\SiteMinder\\CurrentVersion\\LdapSessionServer/,/^HKEY_/{
+    /^AdminPW/g;
+};

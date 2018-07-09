@@ -1,0 +1,3 @@
+{% for host in groups['dir'] %}
+source "{{ pstore_dsa_name }}_{{ hostvars[host]['ansible_hostname'] }}.dxc";
+{% endfor %}

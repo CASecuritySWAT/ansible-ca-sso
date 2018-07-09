@@ -1,0 +1,13 @@
+---
+- hosts: all
+  tasks:
+    - action: setup
+
+- hosts: dir
+  vars_files:
+    - vars/vault.yml
+    - vars/dir.yml
+  roles:
+    - role: common
+    - role: dir
+      tags: all

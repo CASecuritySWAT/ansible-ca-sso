@@ -1,0 +1,18 @@
+SM
+{% if (sso_version is version('12.7', '>=')) %}
+89
+{% else %}
+88
+{% endif %}
+c
+{% if hostvars[groups['pstore'][0]].internal_lb is defined %}
+{{ hostvars[groups['pstore'][0]].internal_lb + ':' + pstore_port|string }}
+{% else %}
+{% for host in groups['pstore'] %}
+{{ host }}:{{ pstore_port }}{% if not loop.last %} {% endif %}
+{% endfor %}
+{% endif %}
+
+q
+q
+q

@@ -1,0 +1,38 @@
+[dir]
+sample-cadir1.example.com ansible_user=sample-user ansible_become=true
+sample-cadir2.example.com ansible_user=sample-user ansible_become=true
+
+[dir:vars]
+sample_user_store=true
+sso_pstore=true
+sso_sstore=true
+
+[smps]
+sample-ssops1.example.com ansible_user=sample-user ansible_become=true external_fqdn=sample-ssops1.example.com
+sample-ssops2.example.com ansible_user=sample-user ansible_become=true external_fqdn=sample-ssops2.example.com
+
+[smps:vars]
+external_adminui_port=8443
+
+[sps]
+sample-ssoag1.example.com ansible_user=sample-user ansible_become=true external_fqdn=sample-ssoag1.example.com
+sample-ssoag2.example.com ansible_user=sample-user ansible_become=true external_fqdn=sample-ssoag2.example.com
+
+[sps:vars]
+# If sps_lb is defined, SPS will respond to requests with LB instead of local server name in the HOST header.
+sps_lb=sample-centos7.example.com
+
+[smwa]
+sample-ssowa1.example.com ansible_user=sample-user ansible_become=true
+sample-ssowa2.example.com ansible_user=sample-user ansible_become=true
+
+# Dummy group to define policy store information
+# db_type can be DB_ORACLE, DB_POSTGRE, or LDAP_CADIR
+[pstore]
+#sample-rhel7.example.com ansible_connection=local db_name=siteminder db_port=5432 db_user=siteminder db_type=DB_POSTGRE
+# With LDAP_CADIR, use db_name to specify base DN, and db_user for LDAP admin user
+sample-cadir1.example.com ansible_user=sample-user ansible_become=true db_name="o=devssopolicy" db_port=15389 db_user="uid=ssoadmin,o=devssopolicy" db_type=LDAP_CADIR
+sample-cadir2.example.com ansible_user=sample-user ansible_become=true db_name="o=devssopolicy" db_port=15389 db_user="uid=ssoadmin,o=devssopolicy" db_type=LDAP_CADIR
+
+[pstore:vars]
+internal_lb=sample-lb2.example.com

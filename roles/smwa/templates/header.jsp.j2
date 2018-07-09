@@ -1,0 +1,55 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<%@ page import="java.util.Enumeration" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>JSP Header Request</title>
+</head>
+<body>
+<h4>Paramter Information</h4>
+<table border="1">
+<%
+
+// you can get an enumeratable list
+// of parameter keys by using request.getParameterNames()
+Enumeration en = request.getParameterNames();
+
+// enumerate through the keys and extract the values
+// from the keys!
+while (en.hasMoreElements()) {
+String parameterName = (String) en.nextElement();
+String parameterValue = request.getParameter(parameterName);
+%>
+<tr><td><%= parameterName %></td><td><%= parameterValue %></td></tr>
+<%
+}
+%>
+</table>
+
+<h4>Header Request Information</h4>
+<table border="1">
+<%! Enumeration enm, header;
+String hName, hValue;
+%>
+<%
+enm = request.getHeaderNames();
+while (enm.hasMoreElements()) {
+hName = (String) enm.nextElement();
+header = request.getHeaders(hName);
+if(header != null)
+{
+while(header.hasMoreElements())
+{
+hValue= (String) header.nextElement();
+}
+}
+%>
+<tr><td><%= hName %></td><td><%= hValue %></td></tr>
+<%
+}
+%>
+</table>
+</body>
+</html>

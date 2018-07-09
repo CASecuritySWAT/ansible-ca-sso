@@ -1,0 +1,1108 @@
+version: 1
+
+dn: ou=people,{{ user_base_dn }}
+objectClass: organizationalUnit
+ou: people
+
+dn: cn=dsaadmin,{{ user_base_dn }}
+objectClass: top
+objectClass: person
+cn: dsaadmin
+sn: DSA Admin
+userPassword: {{ vault_imadmin_password }}
+
+dn: ou=groups,{{ user_base_dn }}
+objectClass: organizationalUnit
+ou: groups
+
+dn: uid=imadmin,ou=people,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: IM Admin
+givenName: IM
+sn: Admin
+uid: imadmin
+imLoginId: imadmin
+userPassword: {{ vault_imadmin_password }}
+
+dn: uid=publicuser,ou=people,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Public User
+givenName: Public
+sn: User
+uid: publicuser
+imLoginId: publicuser
+userPassword: {{ vault_imadmin_password }}
+
+dn: ou=northamerica,{{ user_base_dn }}
+objectClass: organizationalUnit
+objectClass: top
+ou: northamerica
+
+dn: ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: organizationalUnit
+objectClass: top
+ou: people
+
+dn: uid=allmi01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Michael Allen
+employeeType: Employee
+givenName: Michael
+mail: allmi01@{{ email_domain }}
+sn: Allen
+title: CEO
+uid: allmi01
+imLoginId: allmi01
+userPassword: {{ default_user_password }}
+
+dn: uid=menbr01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Brian Mendoza
+employeeType: Employee
+givenName: Brian
+mail: menbr01@{{ email_domain }}
+sn: Mendoza
+title: CIO
+uid: menbr01
+imLoginId: menbr01
+userPassword: {{ default_user_password }}
+
+dn: uid=howel01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Ellis Howard
+employeeType: Employee
+givenName: Howard
+mail: howel01@{{ email_domain }}
+sn: Ellis
+title: CCO
+uid: howel01
+imLoginId: howel01
+userPassword: {{ default_user_password }}
+
+dn: uid=titwi01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: William Titus
+employeeType: Employee
+givenName: William
+mail: titwi01@{{ email_domain }}
+sn: Titus
+title: VP
+uid: titwi01
+imLoginId: titwi01
+userPassword: {{ default_user_password }}
+
+dn: uid=hiran01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Anita Hirsch
+employeeType: Employee
+givenName: Anita
+mail: hiran01@{{ email_domain }}
+sn: Hirsch
+title: VP
+uid: hiran01
+imLoginId: hiran01
+userPassword: {{ default_user_password }}
+
+dn: uid=jonri01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Rita Jones
+employeeType: Employee
+givenName: Rita
+mail: jonri01@{{ email_domain }}
+sn: Jones
+title: Manager
+uid: jonri01
+imLoginId: jonri01
+userPassword: {{ default_user_password }}
+
+dn: uid=walma01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Marge Walton
+employeeType: Employee
+givenName: Marge
+mail: walma01@{{ email_domain }}
+sn: Walton
+title: Manager
+uid: walma01
+imLoginId: walma01
+userPassword: {{ default_user_password }}
+
+dn: uid=brosa01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Sally Brown
+employeeType: Employee
+givenName: Sally
+mail: brosa01@{{ email_domain }}
+sn: Brown
+title: AD
+uid: brosa01
+imLoginId: brosa01
+userPassword: {{ default_user_password }}
+
+dn: uid=arnju01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: June Arnold
+employeeType: Employee
+givenName: June
+mail: arnju01@{{ email_domain }}
+sn: Arnold
+title: Representative
+uid: arnju01
+imLoginId: arnju01
+userPassword: {{ default_user_password }}
+
+dn: uid=belto01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Tony Belli
+employeeType: Employee
+givenName: Tony
+mail: belto01@{{ email_domain }}
+sn: Belli
+title: AD
+uid: belto01
+imLoginId: belto01
+userPassword: {{ default_user_password }}
+
+dn: uid=mccco01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Cory McCullough
+employeeType: Employee
+givenName: Cory
+mail: mccco01@{{ email_domain }}
+sn: McCullough
+title: Analyst
+uid: mccco01
+imLoginId: mccco01
+userPassword: {{ default_user_password }}
+
+dn: uid=merpa01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Pauline Merrow
+employeeType: Employee
+givenName: Pauline
+mail: merpa01@{{ email_domain }}
+sn: Merrow
+title: Analyst
+uid: merpa01
+imLoginId: merpa01
+userPassword: {{ default_user_password }}
+
+dn: uid=seawe01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Wes Seacrest
+employeeType: Employee
+givenName: Wes
+mail: seawe@{{ email_domain }}
+sn: Seacrest
+title: Analyst
+uid: seawe01
+imLoginId: seawe01
+userPassword: {{ default_user_password }}
+
+dn: uid=patde01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Debbie Patrick
+employeeType: Employee
+givenName: Debbie
+mail: patde01@{{ email_domain }}
+sn: Patrick
+title: Analyst
+uid: patde01
+imLoginId: patde01
+userPassword: {{ default_user_password }}
+
+dn: uid=garan01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Anne Garrett
+employeeType: Employee
+givenName: Anne
+mail: garan01@{{ email_domain }}
+sn: Garrett
+title: Analyst
+uid: garan01
+imLoginId: garan01
+userPassword: {{ default_user_password }}
+
+dn: uid=watro01,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Rod Waterhouse
+employeeType: Employee
+givenName: Rod
+mail: watro01@{{ email_domain }}
+sn: Waterhouse
+title: Analyst
+uid: watro01
+imLoginId: watro01
+userPassword: {{ default_user_password }}
+
+dn: uid=superuser,ou=people,ou=northamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Super User
+givenName: Super
+sn: User
+uid: superuser
+imLoginId: superuser
+userPassword: {{ default_user_password }}
+
+dn: ou=groups,ou=northamerica,{{ user_base_dn }}
+objectClass: organizationalUnit
+objectClass: top
+ou: groups
+
+dn: cn=Executive,ou=groups,ou=northamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: Executive
+uniqueMember: uid=allmi01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=mendo01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=howel01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+
+dn: cn=VP,ou=groups,ou=northamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: VP
+uniqueMember: uid=titwi01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=hiran01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+
+dn: cn=Manager,ou=groups,ou=northamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: Manager
+uniqueMember: uid=jonri01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=walma01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+
+dn: cn=NA Real Estate,ou=groups,ou=northamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: NA Real Estate
+uniqueMember: uid=titwi01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=brosa01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=belto01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=garan01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=watro01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+
+dn: cn=IT,ou=groups,ou=northamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: IT
+uniqueMember: uid=hiran01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+
+dn: cn=NA HR,ou=groups,ou=northamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: NA HR
+uniqueMember: uid=jonri01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=arnju01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+
+dn: cn=Procurement,ou=groups,ou=northamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: Procurement
+uniqueMember: uid=walma01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+
+dn: cn=NA AD,ou=groups,ou=northamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: NA AD
+uniqueMember: uid=brosa01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=belto01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+
+dn: cn=NA Rep,ou=groups,ou=northamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: NA Rep
+uniqueMember: uid=arnju01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+
+dn: cn=NA Analyst,ou=groups,ou=northamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: NA Analyst
+uniqueMember: uid=mccco01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=merpa01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=seawe01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=patde01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=garan01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=watro01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+
+dn: cn=NA Insurance,ou=groups,ou=northamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: NA Insurance
+uniqueMember: uid=titwi01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=brosa01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=mccco01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=merpa01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+
+dn: cn=NA Investments,ou=groups,ou=northamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: NA Investments
+uniqueMember: uid=titwi01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=brosa01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=seawe01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+uniqueMember: uid=patde01,ou=Users,ou=NorthAmerica,{{ user_base_dn }}
+
+dn: ou=latinamerica,{{ user_base_dn }}
+objectClass: organizationalUnit
+objectClass: top
+ou: latinamerica
+
+dn: ou=people,ou=latinamerica,{{ user_base_dn }}
+objectClass: organizationalUnit
+objectClass: top
+ou: people
+
+dn: uid=cinel01,ou=people,ou=latinamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Eliana Cintra
+employeeType: Employee
+givenName: Eliana
+mail: cinel01@{{ email_domain }}
+sn: Cintra
+title: AD
+uid: cinel01
+imLoginId: cinel01
+userPassword: {{ default_user_password }}
+
+dn: uid=peral01,ou=people,ou=latinamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Alberto Pereira
+employeeType: Employee
+givenName: Alberto
+mail: peral01@{{ email_domain }}
+sn: Pereira
+title: Representative
+uid: peral01
+imLoginId: peral01
+userPassword: {{ default_user_password }}
+
+dn: uid=sanlu01,ou=people,ou=latinamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Luis Santis
+employeeType: Employee
+givenName: Luis
+mail: sanlu01@{{ email_domain }}
+sn: Santis
+title: AD
+uid: sanlu01
+imLoginId: sanlu01
+userPassword: {{ default_user_password }}
+
+dn: uid=perfl01,ou=people,ou=latinamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Florisvaldo Perez
+employeeType: Employee
+givenName: Florisvaldo
+mail: perfl01@{{ email_domain }}
+sn: Perez
+title: Analyst
+uid: perfl01
+imLoginId: perfl01
+userPassword: {{ default_user_password }}
+
+dn: uid=olica01,ou=people,ou=latinamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Catia Oliveira
+employeeType: Employee
+givenName: Catia
+mail: olica01@{{ email_domain }}
+sn: Oliveira
+title: Analyst
+uid: olica01
+imLoginId: olica01
+userPassword: {{ default_user_password }}
+
+dn: uid=manse01,ou=people,ou=latinamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Sergio Mancuso
+employeeType: Employee
+givenName: Sergio
+mail: manse01@{{ email_domain }}
+sn: Mancuso
+title: Analyst
+uid: manse01
+imLoginId: manse01
+userPassword: {{ default_user_password }}
+
+dn: uid=gonca01,ou=people,ou=latinamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Carla Goncalves
+employeeType: Employee
+givenName: Carla
+mail: gonca01@{{ email_domain }}
+sn: Goncalves
+title: Analyst
+uid: gonca01
+imLoginId: gonca01
+userPassword: {{ default_user_password }}
+
+dn: uid=ferma01,ou=people,ou=latinamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Maria Fernandes
+employeeType: Employee
+givenName: Maria
+mail: ferma01@{{ email_domain }}
+sn: Fernandes
+title: Analyst
+uid: ferma01
+imLoginId: ferma01
+userPassword: {{ default_user_password }}
+
+dn: uid=limra01,ou=people,ou=latinamerica,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Rafael Lima
+employeeType: Employee
+givenName: Rafael
+mail: limra01@{{ email_domain }}
+sn: Lima
+title: Analyst
+uid: limra01
+imLoginId: limra01
+userPassword: {{ default_user_password }}
+
+dn: ou=groups,ou=latinamerica,{{ user_base_dn }}
+objectClass: organizationalUnit
+objectClass: top
+ou: groups
+
+dn: cn=LA Real Estate,ou=groups,ou=latinamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: LA Real Estate
+uniqueMember: uid=cinel01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+uniqueMember: uid=sanlu01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+uniqueMember: uid=ferma01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+uniqueMember: uid=limra01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+
+dn: cn=LA HR,ou=groups,ou=latinamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: LA HR
+uniqueMember: uid=peral01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+
+dn: cn=LA AD,ou=groups,ou=latinamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: LA AD
+uniqueMember: uid=cinel01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+uniqueMember: uid=sanlu01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+
+dn: cn=LA Rep,ou=groups,ou=latinamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: LA Rep
+uniqueMember: uid=peral01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+
+dn: cn=LA Analyst,ou=groups,ou=latinamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: LA Analyst
+uniqueMember: uid=perfl01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+uniqueMember: uid=olica01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+uniqueMember: uid=manse01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+uniqueMember: uid=gonca01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+uniqueMember: uid=ferma01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+uniqueMember: uid=limra01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+
+dn: cn=LA Insurance,ou=groups,ou=latinamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: LA Insurance
+uniqueMember: uid=cinel01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+uniqueMember: uid=perfl01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+uniqueMember: uid=olica01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+
+dn: cn=LA Investments,ou=groups,ou=latinamerica,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: LA Investments
+uniqueMember: uid=cinel01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+uniqueMember: uid=manse01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+uniqueMember: uid=gonca01,ou=Users,ou=LatinAmerica,{{ user_base_dn }}
+
+dn: ou=emea,{{ user_base_dn }}
+objectClass: organizationalUnit
+objectClass: top
+ou: emea
+
+dn: ou=people,ou=emea,{{ user_base_dn }}
+objectClass: organizationalUnit
+objectClass: top
+ou: people
+
+dn: uid=banry01,ou=people,ou=emea,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Ryan Bannister
+employeeType: Employee
+givenName: Ryan
+mail: banry01@{{ email_domain }}
+sn: Bannister
+title: AD
+uid: banry01
+imLoginId: banry01
+userPassword: {{ default_user_password }}
+
+dn: uid=thaed01,ou=people,ou=emea,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Edgar Thain
+employeeType: Employee
+givenName: Edgar
+mail: thaed01@{{ email_domain }}
+sn: Thain
+title: Representative
+uid: thaed01
+imLoginId: thaed01
+userPassword: {{ default_user_password }}
+
+dn: uid=fozen01,ou=people,ou=emea,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Enrique Foz
+employeeType: Employee
+givenName: Enrique
+mail: fozen01@{{ email_domain }}
+sn: Foz
+title: AD
+uid: fozen01
+imLoginId: fozen01
+userPassword: {{ default_user_password }}
+
+dn: uid=sjoul01,ou=people,ou=emea,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Ulf Sjoberg
+employeeType: Employee
+givenName: Ulf
+mail: sjoul01@{{ email_domain }}
+sn: Sjoberg
+title: Analyst
+uid: sjoul01
+imLoginId: sjoul01
+userPassword: {{ default_user_password }}
+
+dn: uid=fries01,ou=people,ou=emea,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Estelle Friquet
+employeeType: Employee
+givenName: Estelle
+mail: fries01@{{ email_domain }}
+sn: Friquet
+title: Analyst
+uid: fries01
+imLoginId: fries01
+userPassword: {{ default_user_password }}
+
+dn: uid=krahe01,ou=people,ou=emea,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Heinrich Kraaz
+employeeType: Employee
+givenName: Heinrich
+mail: krahe01@{{ email_domain }}
+sn: Kraaz
+title: Analyst
+uid: krahe01
+imLoginId: krahe01
+userPassword: {{ default_user_password }}
+
+dn: uid=nahaz01,ou=people,ou=emea,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Azib Nahra
+employeeType: Employee
+givenName: Azib
+mail: nahaz01@{{ email_domain }}
+sn: Nahra
+title: Analyst
+uid: nahaz01
+imLoginId: nahaz01
+userPassword: {{ default_user_password }}
+
+dn: uid=dzupe01,ou=people,ou=emea,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Petr Dzupin
+employeeType: Employee
+givenName: Petr
+mail: dzupe01@{{ email_domain }}
+sn: Dzupin
+title: Analyst
+uid: dzupe01
+imLoginId: dzupe01
+userPassword: {{ default_user_password }}
+
+dn: uid=talel01,ou=people,ou=emea,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Elisabeth Talbot
+employeeType: Employee
+givenName: Elisabeth
+mail: talel01@{{ email_domain }}
+sn: Talbot
+title: Analyst
+uid: talel01
+imLoginId: talel01
+userPassword: {{ default_user_password }}
+
+dn: ou=groups,ou=emea,{{ user_base_dn }}
+objectClass: organizationalUnit
+objectClass: top
+ou: groups
+
+dn: cn=E Real Estate,ou=groups,ou=emea,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: E Real Estate
+uniqueMember: uid=banry01,ou=Users,ou=EMEA,{{ user_base_dn }}
+uniqueMember: uid=fozen01,ou=Users,ou=EMEA,{{ user_base_dn }}
+uniqueMember: uid=dzupe01,ou=Users,ou=EMEA,{{ user_base_dn }}
+uniqueMember: uid=talel01,ou=Users,ou=EMEA,{{ user_base_dn }}
+
+dn: cn=E HR,ou=groups,ou=emea,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: E HR
+uniqueMember: uid=thaed01,ou=Users,ou=EMEA,{{ user_base_dn }}
+
+dn: cn=E AD,ou=groups,ou=emea,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: E AD
+uniqueMember: uid=banry01,ou=Users,ou=EMEA,{{ user_base_dn }}
+uniqueMember: uid=fozen01,ou=Users,ou=EMEA,{{ user_base_dn }}
+
+dn: cn=E Rep,ou=groups,ou=emea,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: E Rep
+uniqueMember: uid=thaed01,ou=Users,ou=EMEA,{{ user_base_dn }}
+
+dn: cn=E Analyst,ou=groups,ou=emea,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: E Analyst
+uniqueMember: uid=sjoul01,ou=Users,ou=EMEA,{{ user_base_dn }}
+uniqueMember: uid=fries01,ou=Users,ou=EMEA,{{ user_base_dn }}
+uniqueMember: uid=krahe01,ou=Users,ou=EMEA,{{ user_base_dn }}
+uniqueMember: uid=nahaz01,ou=Users,ou=EMEA,{{ user_base_dn }}
+uniqueMember: uid=dzupe01,ou=Users,ou=EMEA,{{ user_base_dn }}
+uniqueMember: uid=talel01,ou=Users,ou=EMEA,{{ user_base_dn }}
+
+dn: cn=E Insurance,ou=groups,ou=emea,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: E Insurance
+uniqueMember: uid=banry01,ou=Users,ou=EMEA,{{ user_base_dn }}
+uniqueMember: uid=sjoul01,ou=Users,ou=EMEA,{{ user_base_dn }}
+uniqueMember: uid=fries01,ou=Users,ou=EMEA,{{ user_base_dn }}
+
+dn: cn=E Investments,ou=groups,ou=emea,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: E Investments
+uniqueMember: uid=banry01,ou=Users,ou=EMEA,{{ user_base_dn }}
+uniqueMember: uid=krahe01,ou=Users,ou=EMEA,{{ user_base_dn }}
+uniqueMember: uid=nahaz01,ou=Users,ou=EMEA,{{ user_base_dn }}
+
+dn: ou=asiapacific,{{ user_base_dn }}
+objectClass: organizationalUnit
+objectClass: top
+ou: asiapacific
+
+dn: ou=people,ou=asiapacific,{{ user_base_dn }}
+objectClass: organizationalUnit
+objectClass: top
+ou: people
+
+dn: uid=hyuhi01,ou=people,ou=asiapacific,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Hirotaka Hyuga
+employeeType: Employee
+givenName: Hirotake
+mail: hyuhi01@{{ email_domain }}
+sn: Hyuga
+title: AD
+uid: hyuhi01
+imLoginId: hyuhi01
+userPassword: {{ default_user_password }}
+
+dn: uid=nisku01,ou=people,ou=asiapacific,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Kuniaki Nishikawa
+employeeType: Employee
+givenName: Kuniaki
+mail: nisku01@{{ email_domain }}
+sn: Nishikawa
+title: Representative
+uid: nisku01
+imLoginId: nisku01
+userPassword: {{ default_user_password }}
+
+dn: uid=parjo01,ou=people,ou=asiapacific,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Joong-Won Park
+employeeType: Employee
+givenName: Joong-Won
+mail: parjo01@{{ email_domain }}
+sn: Park
+title: AD
+uid: parjo01
+imLoginId: parjo01
+userPassword: {{ default_user_password }}
+
+dn: uid=fente01,ou=people,ou=asiapacific,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Tenya Feng
+employeeType: Employee
+givenName: Tenya
+mail: fente01@{{ email_domain }}
+sn: Feng
+title: Analyst
+uid: fente01
+imLoginId: fente01
+userPassword: {{ default_user_password }}
+
+dn: uid=lixxi01,ou=people,ou=asiapacific,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Xiangyue Li
+employeeType: Employee
+givenName: Xiangyue
+mail: lixxi01@{{ email_domain }}
+sn: Li
+title: Analyst
+uid: lixxi01
+imLoginId: lixxi01
+userPassword: {{ default_user_password }}
+
+dn: uid=annpr01,ou=people,ou=asiapacific,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Prabakara Annakula
+employeeType: Employee
+givenName: Prabakara
+mail: annpr01@{{ email_domain }}
+sn: Annakula
+title: Analyst
+uid: annpr01
+imLoginId: annpr01
+userPassword: {{ default_user_password }}
+
+dn: uid=udysu01,ou=people,ou=asiapacific,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Sunil Udyawar
+employeeType: Employee
+givenName: Sunil
+mail: udysu01@{{ email_domain }}
+sn: Udyawar
+title: Analyst
+uid: udysu01
+imLoginId: udysu01
+userPassword: {{ default_user_password }}
+
+dn: uid=gosto01,ou=people,ou=asiapacific,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Tom Gossit
+employeeType: Employee
+givenName: Tom
+mail: gosto01@{{ email_domain }}
+sn: Gossit
+title: Analyst
+uid: gosto01
+imLoginId: gosto01
+userPassword: {{ default_user_password }}
+
+dn: uid=desra01,ou=people,ou=asiapacific,{{ user_base_dn }}
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: imUser
+imUserType: 2
+cn: Rajeev Deshpande
+employeeType: Employee
+givenName: Rajeev
+mail: desra01@{{ email_domain }}
+sn: Deshpande
+title: Analyst
+uid: desra01
+imLoginId: desra01
+userPassword: {{ default_user_password }}
+
+dn: ou=groups,ou=asiapacific,{{ user_base_dn }}
+objectClass: organizationalUnit
+objectClass: top
+ou: groups
+
+dn: cn=AP Real Estate,ou=groups,ou=asiapacific,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: AP Real Estate
+uniqueMember: uid=hyuhi01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+uniqueMember: uid=parjo01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+uniqueMember: uid=gosto01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+uniqueMember: uid=desra01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+
+dn: cn=AP HR,ou=groups,ou=asiapacific,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: AP HR
+uniqueMember: uid=nisku01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+
+dn: cn=AP AD,ou=groups,ou=asiapacific,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: AP AD
+uniqueMember: uid=hyuhi01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+uniqueMember: uid=parjo01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+
+dn: cn=AP Rep,ou=groups,ou=asiapacific,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: AP Rep
+uniqueMember: uid=nisku01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+
+dn: cn=AP Analyst,ou=groups,ou=asiapacific,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: AP Analyst
+uniqueMember: uid=fente01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+uniqueMember: uid=lixxi01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+uniqueMember: uid=annpr01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+uniqueMember: uid=udysu01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+uniqueMember: uid=gosto01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+uniqueMember: uid=desra01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+
+dn: cn=AP Insurance,ou=groups,ou=asiapacific,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: AP Insurance
+uniqueMember: uid=hyuhi01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+uniqueMember: uid=fente01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+uniqueMember: uid=lixxi01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+
+dn: cn=AP Investments,ou=groups,ou=asiapacific,{{ user_base_dn }}
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: AP Investments
+uniqueMember: uid=hyuhi01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+uniqueMember: uid=annpr01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+uniqueMember: uid=udysu01,ou=Users,ou=AsiaPacific,{{ user_base_dn }}
+

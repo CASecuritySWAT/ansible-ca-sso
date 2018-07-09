@@ -1,0 +1,59 @@
+temp_dir: /tmp
+# Install binary download location. If undefined/commented out, the installers should be placed in the files directory of the playbook.
+dir_download_base_url: http://download.example.com/artifactory/generic-release-local/CADirectory/12.6SP3/
+dir_install_tgz: cadir12.6.03_linux_x86_64_directory.tar.gz
+dir_ui_install_tgz: cadir12.6.03_linux_x86_64_management_ui.tar.gz
+dir_install_dir: /opt/CA/Directory
+dir_sharedcomp_dir: /opt/CA/SharedComponents
+
+# Directory user
+dir_dxuser: dsa
+dir_dxgroup: etrdir
+
+# DXagent parameters
+install_dxagent: 'y'
+dir_dxagent_client: cadir_dxa_client
+dir_dxagent_port: 9443
+dir_dxagent_password: '{{ vault_dir_dxagent_password }}'
+
+# Management UI parameters
+dir_ui_port: 3000
+dir_ui_dsa_port: 10389
+
+# To initialize the various stores, define the corresponding variables in the inventory file (i.e.: sample_user_store, sso_pstore, sso_sstore)
+# Sample user directory
+user_dsa_name: userdir
+# Port number should be higher than 1024
+userstore_port: 19389
+userstore_console_port: 19390
+#user_dsa_prefix: '<dc domain><dc sample>'
+#user_base_dn: dc=sample,dc=domain
+# Default base DN for IM identityEnv
+user_dsa_prefix: '<o com><ou ca><ou im>'
+user_base_dn: ou=im,ou=ca,o=com
+email_domain: sample.domain
+default_user_password: '{{ vault_default_user_password }}'
+
+# SSO Policy Store
+# During deployment _{{ ansible_hostname }} will be appended to DSA name
+pstore_dsa_name: ssopolicy
+pstore_port: 15389
+pstore_console_port: 15390
+pstore_dsa_prefix: '<o devssopolicy>'
+pstore_db_size: 100
+pstore_base_dn: o=devssopolicy
+pstore_admin_uid: ssoadmin
+pstore_admin_dn: uid={{ pstore_admin_uid }},{{ pstore_base_dn }}
+pstore_admin_password: '{{ vault_pstore_admin_password }}'
+
+# SSO Session Store
+# During deployment _{{ ansible_hostname }} will be appended to DSA name
+sstore_dsa_name: ssosession
+sstore_port: 16389
+sstore_console_port: 16390
+sstore_dsa_prefix: '<o devssosession>'
+sstore_db_size: 100
+sstore_base_dn: o=devssosession
+sstore_admin_uid: ssoadmin
+sstore_admin_dn: uid={{ sstore_admin_uid }},{{ sstore_base_dn }}
+sstore_admin_password: '{{ vault_sstore_admin_password }}'

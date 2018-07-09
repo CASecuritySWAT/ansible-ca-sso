@@ -1,0 +1,9 @@
+---
+- name: Apply 12.52 SP1 CR5 hotfix for DE165316
+  unarchive: src={{ download_base_url }}/sm-12.52-sp1-cr05-DE165316-SPS-linux-32bit.zip dest={{ sps_install_dir }}/agentframework/bin copy=no
+  tags: hotfix
+  when: "'12.52sp1cr5' in 'download_base_url|default('')'"
+
+- name: Copy proxyrules.xml
+  template: src=proxyrules.xml.j2 dest={{ sps_install_dir }}/proxy-engine/conf/proxyrules.xml backup=yes
+  tags: sps_config

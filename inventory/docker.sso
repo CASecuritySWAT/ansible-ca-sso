@@ -1,0 +1,30 @@
+[dir]
+cadir.docker.local ansible_connection=docker ansible_user=root ansible_host=cadir
+
+[dir:vars]
+sample_user_store=true
+sso_pstore=true
+sso_sstore=true
+
+[smps]
+casso.docker.local ansible_connection=docker ansible_user=root ansible_host=casso external_fqdn=sample-rhel7.example.com
+
+[smps:vars]
+external_adminui_port=18443
+
+[sps]
+caag.docker.local ansible_connection=docker ansible_user=root ansible_host=caag external_fqdn=sample-rhel7.example.com
+
+[sps:vars]
+# If sps_lb is defined, SPS will respond to requests with LB instead of local server name in the HOST header.
+#sps_lb=sps_lb.sample.domain
+
+[smwa]
+apache.docker.local ansible_connection=docker ansible_host=apache ansible_user=root
+
+# Dummy group to define policy store information
+# db_type can be DB_ORACLE, DB_POSTGRE, or LDAP_CADIR
+[pstore]
+#casso-db ansible_connection=local db_name=siteminder db_port=5432 db_user=siteminder db_type=DB_POSTGRE
+# With LDAP_CADIR, use db_name to specify base DN, and db_user for LDAP admin user
+cadir ansible_connection=local db_name="o=devssopolicy" db_port=15389 db_user="uid=ssoadmin,o=devssopolicy" db_type=LDAP_CADIR

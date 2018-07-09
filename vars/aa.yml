@@ -1,0 +1,61 @@
+temp_dir: /tmp
+# Install binary download location. If undefined/commented out, the installers should be placed in the files directory of the playbook.
+aa_version: 9.0.0
+aa_download_base_url: http://download.example.com/artifactory/generic-release-local/AA/{{ aa_version }}/
+aa_install_zip: GEN500000000000116.zip
+ra_install_zip: GEN500000000000127.zip
+#adapter_install_zip: GEN500000000000116/CA-Adapter/CA-Adapter-{{ aa_version }}-RHEL.zip
+jdk_tgz: jdk-8u171-linux-x64.tar.gz
+jdk_path: /opt/jdk1.8.0_171
+aa_installer: GEN500000000000116/CA-StrongAuthentication-{{ aa_version }}-Linux-Installer.bin
+ra_installer: GEN500000000000127/CA-RiskAuthentication-{{ aa_version }}-Linux-Installer.bin
+adapter_installer: GEN500000000000116/CA-Adapter/CA-Adapter-{{ aa_version }}-Linux-Installer.bin
+adapter_32bit_dir: GEN500000000000116/CA-Adapter/32bit-adapterSiteMinder
+aa_install_dir: /opt/CA/AdvAuth
+
+init_aa_db: '1'
+upgrade_aa_db: '0'
+aa_bootstrap: '1'
+aa_dbtype: oracle
+aa_config_db: 'true'
+aa_primary_dsn: aadsn
+aa_db_name: "{{ hostvars[groups['pstore'][0]].db_sid }}"
+aa_db_server: "{{ hostvars[groups['pstore'][0]].inventory_hostname }}"
+aa_db_port: "{{ hostvars[groups['pstore'][0]].db_port }}"
+aa_db_user: "{{ hostvars[groups['pstore'][0]].aa_db_user }}"
+aa_db_password: "{{ vault_db_password }}"
+
+tomcat_download_url: http://archive.apache.org/dist/tomcat/tomcat-7/v7.0.72/bin/apache-tomcat-7.0.72.tar.gz
+tomcat_root: /opt/apache-tomcat-7.0.72
+# Use ojdbc6 for Oracle 11g, or ojdbc7 for Oracle 12c. The jar file will be copied from AFM install
+#jdbc_jar: ojdbc6.jar
+jdbc_jar: ojdbc7.jar
+
+# Strong Authentication
+aa_install_features: 'WFSRV,WFSDK,WFAPP,Admin,arcotuds'
+aa_encryption_type: 'S/W'
+aa_master_key: "{{ vault_aa_master_key }}"
+aa_global_key_label: 'GlobalKey'
+aa_masteradmin_password: "{{ vault_aa_masteradmin_password }}"
+# The sample app will be deployed if aa_sample_app is defined
+aa_sample_app: "{{ aa_install_dir }}/samples/java/ca-strongauth-sample-application.war" 
+
+# Risk Authentication
+ra_install_features: 'RFSRV,RFCASE,RFSDK,Admin,arcotuds,RiskREST,UBP'
+ubp_app: "{{ aa_install_dir }}/java/webapps/ca-userprofiling-application.war"
+aa_restapi_app: "{{ aa_install_dir }}/java/webapps/aa-restapi.war"
+risk_restapi_app: "{{ aa_install_dir }}/java/webapps/risk-restapi.war"
+risk_sample_app: "{{ aa_install_dir }}/samples/java/ca-riskauth-sample-application.war"
+
+# Adapter
+adapter_install_features: 'AFM,ASM,SHIM,FCC,WIZARD,SAMPLEAPP'
+adapter_install_set: Complete
+adapter_jndi_name: AdapterJNDI
+afm_from_email: DoNotReply@example.com
+afm_from_name: 'Authentication Flow Manager'
+afm_smtp_host: mail.example.com
+afm_smtp_auth: 'false'
+afm_smtp_user: ''
+afm_smtp_password: ''
+# AFM Tomcat will have https enabled to allow Access Gateway to proxy https requests
+afmport: 9443
