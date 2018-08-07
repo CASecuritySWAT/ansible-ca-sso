@@ -41,7 +41,7 @@ Perform the following on the Ansible control machine.
   - Optionally specify internal_lb in the pstore inventory group with the FQDN of the internal load balancer for the backend components (e.g.: Directory, SSO Policy Server, etc.) If internal_lb is not defined, the playbook will use product built-in HA/LB mechanisms as appropriate.
   - Use the pstore group to define policy store information.
 - Edit the variables files in the vars directory.
-  - Utilize existing examples and make changes as necessary. Ansible facts/variables should be used where appropriate to make it as generic/repeatable as possible.
+  - Utilize existing examples and make changes as necessary. Ansible facts/variables should be used where appropriate to make it as generic/repeatable as possible. Most of the variables defined in the playbook are used by product silent installers and have names that resemble silent install parameters, so please refer to the product documentation for usage information.
 - CA product binaries
   - If available, specify a download URL in the vars file so the binaries can be downloaded to endpoints during deployment.
   - Otherwise, download the install binaries into the playbook files directory and modify the vars file to use the correct file names. Comment out the appropriate download_base_url variables to utilize local binaries.
